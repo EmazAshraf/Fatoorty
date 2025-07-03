@@ -103,6 +103,25 @@ export interface SuperadminUser {
   role: 'superadmin';
 }
 
+export interface SuperadminProfile {
+  _id: string;
+  name: string;
+  email: string;
+  profilePhoto: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SuperadminProfileUpdateData {
+  name?: string;
+  email?: string;
+}
+
+export interface SuperadminPasswordChangeData {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface RestaurantOwner {
   id: string;
   name: string;
