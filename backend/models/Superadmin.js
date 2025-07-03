@@ -19,6 +19,10 @@ const superadminSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

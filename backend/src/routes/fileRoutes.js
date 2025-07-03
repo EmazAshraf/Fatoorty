@@ -56,4 +56,9 @@ router.get('/staff/:filename', (req, res) => {
   res.sendFile(filePath);
 });
 
+router.get('/profile/:filename', (req, res) => {
+  const filePath = path.join(config.upload.uploadPath, 'profiles', req.params.filename);
+  res.sendFile(filePath);
+});
+
 export default router; 

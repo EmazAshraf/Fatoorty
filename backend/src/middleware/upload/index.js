@@ -12,6 +12,8 @@ const storage = multer.diskStorage({
       uploadPath = path.join(uploadPath, 'documents');
     } else if (file.fieldname === 'image') {
       uploadPath = path.join(uploadPath, 'staff');
+    } else if (file.fieldname === 'profilePhoto') {
+      uploadPath = path.join(uploadPath, 'profiles');
     }
     cb(null, uploadPath);
   },
@@ -23,7 +25,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.fieldname === 'icon' || file.fieldname === 'image') {
+  if (file.fieldname === 'icon' || file.fieldname === 'image' || file.fieldname === 'profilePhoto') {
     if (!config.upload.allowedImageTypes.includes(file.mimetype)) {
       return cb(new ValidationError('Invalid image type'), false);
     }
@@ -43,4 +45,5 @@ const upload = multer({
 
 export const uploadRestaurantIcon = upload.single('icon');
 export const uploadGovId = upload.single('document');
-export const uploadStaffImage = upload.single('image'); 
+export const uploadStaffImage = upload.single('image');
+export const uploadProfilePhoto = upload.single('profilePhoto'); 

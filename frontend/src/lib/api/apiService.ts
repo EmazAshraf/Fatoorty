@@ -6,7 +6,8 @@ import type {
   StaffStats,
   RestaurantLoginResponse,
   EnhancedRestaurantLoginResponse,
-  SuperadminLoginResponse
+  SuperadminLoginResponse,
+  SuperadminProfile
 } from '../../types/api';
 
 // API Configuration
@@ -279,6 +280,73 @@ class ApiService {
 
   getRestaurantIconUrl(filename: string): string {
     return `${API_BASE_URL}/files/restaurant-icon/${filename}`;
+  }
+
+  // Superadmin Settings APIs
+  async getSuperadminProfile(): Promise<{ superadmin: SuperadminProfile }> {
+    const response = await fetch(`${API_BASE_URL}/superadmin/profile`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch profile');
+    }
+    
+    return response.json();
+  }
+
+  async updateSuperadminProfile(data: { name?: string; email?: string }): Promise<{ superadmin: SuperadminProfile }> {
+    const response = await fetch(`${API_BASE_URL}/superadmin/settings/profile`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to update profile');
+    }
+    
+    return response.json();
+  }
+
+  async updateSuperadminProfilePhoto(file: File): Promise<{ superadmin: SuperadminProfile; message: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+    
+    const response = await fetch(`${API_BASE_URL}/superadmin/settings/profile-photo`, {
+      method: 'POST',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to update profile photo');
+    }
+    
+    return response.json();
+  }
+
+  async changeSuperadminPassword(data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/superadmin/settings/password`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to change password');
+    }
+    
+    return response.json();
+  }
+
+  getSuperadminProfilePhotoUrl(filename: string): string {
+    return `${API_BASE_URL}/files/profile/${filename}`;
   }
 }
 

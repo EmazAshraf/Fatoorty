@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/layout/Footer";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +35,21 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          toastClassName="!bg-white !text-gray-900 !border !border-gray-200 !shadow-lg !rounded-lg"
+          progressClassName="!bg-indigo-600"
+          closeButton={false}
+        />
       </body>
     </html>
   );
