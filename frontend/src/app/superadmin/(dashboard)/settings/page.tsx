@@ -206,156 +206,197 @@ export default function SuperadminSettings() {
         <p className="text-gray-600 mt-1">Manage your profile and security settings</p>
       </div>
 
-      {/* Profile Photo Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center space-x-6">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              {profile?.profilePhoto ? (
-                <img
-                  src={apiService.getSuperadminProfilePhotoUrl(profile.profilePhoto)}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-12 h-12 text-gray-400" />
+      {/* Main Content - Side by Side Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {/* Left Side - Profile Section (30%) */}
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
+            {/* Profile Photo */}
+            <div className="text-center">
+              <div className="relative inline-block">
+                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mx-auto">
+                  {profile?.profilePhoto ? (
+                    <img
+                      src={apiService.getSuperadminProfilePhotoUrl(profile.profilePhoto)}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-16 h-16 text-gray-400" />
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition-colors">
+                  <Camera className="w-4 h-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePhotoUpload}
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                  />
+                </label>
+              </div>
+              
+              {/* Profile Info */}
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-semibold text-gray-900">{profile?.name}</h3>
+                <p className="text-gray-600 mt-1">{profile?.email}</p>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Member since</span>
+                    <br />
+                    {new Date(profile?.createdAt || '').toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+                {uploadingPhoto && (
+                  <p className="text-sm text-indigo-600 mt-3 animate-pulse">
+                    Uploading photo...
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Settings Tabs (70%) */}
+        <div className="lg:col-span-7">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200 px-6">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('account')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'account'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <User className="w-4 h-4 inline mr-2" />
+                  Account Details
+                </button>
+                <button
+                  onClick={() => setActiveTab('password')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'password'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Lock className="w-4 h-4 inline mr-2" />
+                  Change Password
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-6">
+              {activeTab === 'account' && (
+                <div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
+                    <p className="text-gray-600 text-sm mt-1">Update your account details and information</p>
+                  </div>
+                  
+                  <form onSubmit={handleProfileSubmit} className="space-y-6 max-w-lg">
+                    <Input
+                      label="Full Name"
+                      value={profileForm.name}
+                      onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                      error={profileErrors.name}
+                      required
+                      leftIcon={<User className="w-4 h-4" />}
+                      className="w-full"
+                    />
+                    
+                    <Input
+                      label="Email Address"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                      error={profileErrors.email}
+                      required
+                      leftIcon={<Edit2 className="w-4 h-4" />}
+                      className="w-full"
+                    />
+
+                    <div className="pt-4">
+                      <Button
+                        type="submit"
+                        loading={updating}
+                        leftIcon={<Save className="w-4 h-4" />}
+                        disabled={updating}
+                        className="w-full sm:w-auto"
+                      >
+                        {updating ? 'Updating...' : 'Update Profile'}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {activeTab === 'password' && (
+                <div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+                    <p className="text-gray-600 text-sm mt-1">Update your password to keep your account secure</p>
+                  </div>
+                  
+                  <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-lg">
+                    <Input
+                      label="Current Password"
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                      error={passwordErrors.currentPassword}
+                      required
+                      leftIcon={<Lock className="w-4 h-4" />}
+                      className="w-full"
+                    />
+                    
+                    <Input
+                      label="New Password"
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                      error={passwordErrors.newPassword}
+                      required
+                      leftIcon={<Lock className="w-4 h-4" />}
+                      helperText="Password must be at least 8 characters with uppercase, lowercase, number, and special character"
+                      className="w-full"
+                    />
+                    
+                    <Input
+                      label="Confirm New Password"
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                      error={passwordErrors.confirmPassword}
+                      required
+                      leftIcon={<Lock className="w-4 h-4" />}
+                      className="w-full"
+                    />
+
+                    <div className="pt-4">
+                      <Button
+                        type="submit"
+                        loading={updating}
+                        leftIcon={<Save className="w-4 h-4" />}
+                        disabled={updating}
+                        className="w-full sm:w-auto"
+                      >
+                        {updating ? 'Changing...' : 'Change Password'}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               )}
             </div>
-            <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition-colors">
-              <Camera className="w-4 h-4" />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePhotoUpload}
-                className="hidden"
-                disabled={uploadingPhoto}
-              />
-            </label>
           </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">{profile?.name}</h3>
-            <p className="text-gray-600">{profile?.email}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Member since {new Date(profile?.createdAt || '').toLocaleDateString()}
-            </p>
-            {uploadingPhoto && (
-              <p className="text-sm text-indigo-600 mt-1">Uploading photo...</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Settings Tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 px-6">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('account')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'account'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <User className="w-4 h-4 inline mr-2" />
-              Account Details
-            </button>
-            <button
-              onClick={() => setActiveTab('password')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'password'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <Lock className="w-4 h-4 inline mr-2" />
-              Change Password
-            </button>
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === 'account' && (
-            <form onSubmit={handleProfileSubmit} className="space-y-4 max-w-md">
-              <Input
-                label="Full Name"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                error={profileErrors.name}
-                required
-                leftIcon={<User className="w-4 h-4" />}
-              />
-              
-              <Input
-                label="Email Address"
-                type="email"
-                value={profileForm.email}
-                onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                error={profileErrors.email}
-                required
-                leftIcon={<Edit2 className="w-4 h-4" />}
-              />
-
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  loading={updating}
-                  leftIcon={<Save className="w-4 h-4" />}
-                  disabled={updating}
-                >
-                  {updating ? 'Updating...' : 'Update Profile'}
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {activeTab === 'password' && (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
-              <Input
-                label="Current Password"
-                type="password"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                error={passwordErrors.currentPassword}
-                required
-                leftIcon={<Lock className="w-4 h-4" />}
-              />
-              
-              <Input
-                label="New Password"
-                type="password"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                error={passwordErrors.newPassword}
-                required
-                leftIcon={<Lock className="w-4 h-4" />}
-                helperText="Password must be at least 8 characters with uppercase, lowercase, number, and special character"
-              />
-              
-              <Input
-                label="Confirm New Password"
-                type="password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                error={passwordErrors.confirmPassword}
-                required
-                leftIcon={<Lock className="w-4 h-4" />}
-              />
-
-              <div className="pt-4">
-                <Button
-                  type="submit"
-                  loading={updating}
-                  leftIcon={<Save className="w-4 h-4" />}
-                  disabled={updating}
-                >
-                  {updating ? 'Changing...' : 'Change Password'}
-                </Button>
-              </div>
-            </form>
-          )}
         </div>
       </div>
     </div>
