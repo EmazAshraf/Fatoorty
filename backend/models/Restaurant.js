@@ -57,6 +57,25 @@ const restaurantSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    
+    // Subscription information
+    currentSubscriptionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subscription',
+      index: true,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['trial', 'active', 'suspended', 'cancelled', 'expired'],
+      default: 'trial',
+    },
+    
+    // TapPay customer information
+    tapPayCustomerId: {
+      type: String,
+      index: true,
+    },
+    
     isDeleted: {
       type: Boolean,
       default: false,
