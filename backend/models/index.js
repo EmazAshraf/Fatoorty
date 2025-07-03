@@ -3,8 +3,9 @@ import Superadmin from './Superadmin.js';
 import RestaurantOwner from './RestaurantOwner.js';
 import Restaurant from './Restaurant.js';
 import Subscription from './Subscription.js';
+import PaymentHistory from './PaymentHistory.js';
 import Staff from './Staff.js';
-import TableQR from './TableQR.js';
+import Table from './Table.js';
 import Menu from './Menu.js';
 import MenuCategory from './MenuCategory.js';
 import MenuItem from './MenuItem.js';
@@ -18,8 +19,9 @@ export {
   RestaurantOwner,
   Restaurant,
   Subscription,
+  PaymentHistory,
   Staff,
-  TableQR,
+  Table,
   Menu,
   MenuCategory,
   MenuItem,

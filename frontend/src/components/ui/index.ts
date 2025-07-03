@@ -22,6 +22,10 @@ export type { ModalProps } from './Modal';
 export { Badge } from './Badge';
 export type { BadgeProps } from './Badge';
 
+// PricingCard
+export { default as PricingCard } from './PricingCard';
+export type { PricingCardProps } from './PricingCard';
+
 // Re-export existing components
 export { default as Pagination } from './Pagination';
 export { default as TableSkeleton } from './TableSkeleton';
