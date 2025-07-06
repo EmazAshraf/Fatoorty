@@ -259,3 +259,72 @@ export interface FormField {
     maxLength?: number;
   };
 } 
+
+// Menu Types
+export interface MenuCategory {
+  _id: string;
+  restaurantId: string;
+  name: string;
+  description?: string;
+  image?: string;
+  displayOrder: number;
+  isActive: boolean;
+  isDeleted: boolean;
+  itemCount: number;
+  createdAt: string;
+  updatedAt: string;
+  items?: MenuItem[];
+}
+
+export interface MenuItem {
+  _id: string;
+  categoryId: string;
+  name: string;
+  description?: string;
+  image?: string;
+  price: number;
+  rating: {
+    average: number;
+    count: number;
+  };
+  prepTime?: number;
+  ingredients: string[];
+  options: MenuItemOption[];
+  displayOrder: number;
+  isAvailable: boolean;
+  isDeleted: boolean;
+  totalOrders: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MenuItemOption {
+  name: string;
+  type: 'single-select' | 'multi-select';
+  required: boolean;
+  choices: MenuItemChoice[];
+}
+
+export interface MenuItemChoice {
+  name: string;
+  priceModifier: number;
+  isDefault: boolean;
+}
+
+export interface MenuCategoryFormData {
+  name: string;
+  description?: string;
+  image?: File | null;
+  displayOrder?: number;
+}
+
+export interface MenuItemFormData {
+  name: string;
+  description?: string;
+  image?: File | null;
+  price: number;
+  prepTime?: number;
+  ingredients: string[];
+  options: MenuItemOption[];
+  displayOrder?: number;
+} 

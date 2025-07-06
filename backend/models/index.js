@@ -6,7 +6,6 @@ import Subscription from './Subscription.js';
 import PaymentHistory from './PaymentHistory.js';
 import Staff from './Staff.js';
 import Table from './Table.js';
-import Menu from './Menu.js';
 import MenuCategory from './MenuCategory.js';
 import MenuItem from './MenuItem.js';
 import Order from './Order.js';
@@ -22,7 +21,6 @@ export {
   PaymentHistory,
   Staff,
   Table,
-  Menu,
   MenuCategory,
   MenuItem,
   Order,

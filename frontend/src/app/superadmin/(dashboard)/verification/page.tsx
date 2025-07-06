@@ -19,11 +19,11 @@ import {
   Loader2
 } from 'lucide-react';
 import { apiService } from '@/lib/api';
-import StatCard from '@/components/dashboard/StatCard';
+import { StatCard } from '@/components/ui';
 import { Table, Button, Input, Select, Badge, Modal, type Column, type SelectOption } from '@/components/ui';
 import Pagination from '@/components/ui/Pagination';
 import DateRangePicker from '@/components/ui/DateRangePicker';
-import PDFViewerModal from '@/components/ui/PDFViewerModal';
+import PDFViewerModal from '@/components/ui/Modal/PDFViewerModal';
 
 interface Restaurant {
   id: string;
@@ -144,16 +144,19 @@ export default function VerificationPage() {
       });
 
       if (response.success) {
-        setRestaurants(response.data);
-        setPagination(response.pagination);
+        const data = response.data as Restaurant[];
+        const pagination = response.pagination as PaginationData;
+        
+        setRestaurants(data);
+        setPagination(pagination);
         
         // Calculate stats from the data
-        const pending = response.data.filter((r: Restaurant) => r.verificationStatus === 'pending').length;
-        const verified = response.data.filter((r: Restaurant) => r.verificationStatus === 'verified').length;
-        const rejected = response.data.filter((r: Restaurant) => r.verificationStatus === 'rejected').length;
+        const pending = data.filter((r: Restaurant) => r.verificationStatus === 'pending').length;
+        const verified = data.filter((r: Restaurant) => r.verificationStatus === 'verified').length;
+        const rejected = data.filter((r: Restaurant) => r.verificationStatus === 'rejected').length;
         
         setStats({
-          totalRestaurants: response.pagination.totalCount,
+          totalRestaurants: pagination.totalCount,
           pendingVerifications: pending,
           verifiedRestaurants: verified,
           rejectedVerifications: rejected
@@ -307,14 +310,7 @@ export default function VerificationPage() {
   const columns: Column<Restaurant>[] = [
     {
       key: 'select',
-      title: (
-        <input
-          type="checkbox"
-          checked={selectedRestaurants.length === restaurants.length && restaurants.length > 0}
-          onChange={(e) => handleSelectAll(e.target.checked)}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-      ),
+      title: '',
       width: 50,
       render: (_, record) => (
         <input
@@ -490,7 +486,7 @@ export default function VerificationPage() {
           <Input
             placeholder="Search restaurants..."
             value={filters.search}
-            onChange={handleSearch}
+            onChange={(e) => handleSearch(e.target.value)}
             leftIcon={<Search className="w-4 h-4" />}
           />
           
