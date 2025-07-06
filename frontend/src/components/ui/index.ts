@@ -15,8 +15,8 @@ export { Table } from './Table';
 export type { TableProps, Column } from './Table';
 
 // Modal
-export { Modal, ModalFooter } from './Modal';
-export type { ModalProps } from './Modal';
+export { Modal, ModalFooter, BaseModal, BaseModalFooter, CategoryFormModal, MenuItemFormModal, PDFViewerModal } from './Modal';
+export type { ModalProps, BaseModalProps } from './Modal';
 
 // Badge
 export { Badge } from './Badge';
@@ -26,8 +26,15 @@ export type { BadgeProps } from './Badge';
 export { default as PricingCard } from './PricingCard';
 export type { PricingCardProps } from './PricingCard';
 
+// Toggle
+export { Toggle } from './Toggle';
+export type { ToggleProps } from './Toggle';
+
 // Re-export existing components
 export { default as Pagination } from './Pagination';
 export { default as TableSkeleton } from './TableSkeleton';
 export { default as DateRangePicker } from './DateRangePicker';
-export { default as PDFViewerModal } from './PDFViewerModal'; 
+
+// StatCard
+export { StatCard } from './StatCard';
+ 

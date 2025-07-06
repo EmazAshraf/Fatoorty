@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/layout/Footer";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { HeroUIProvider } from "@heroui/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning={true}
       >
+        <HeroUIProvider>
         <main className="flex-grow">
           {children}
         </main>
@@ -50,6 +52,7 @@ export default function RootLayout({
           progressClassName="!bg-indigo-600"
           closeButton={false}
         />
+        </HeroUIProvider>
       </body>
     </html>
   );

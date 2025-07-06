@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StatCard from '@/components/dashboard/StatCard';
+import { StatCard } from '@/components/ui';
 import TopRestaurantsChart from '@/components/dashboard/TopRestaurantsChart';
 import EarningsChart from '@/components/dashboard/EarningsChart';
 import { 
@@ -73,10 +73,7 @@ export default function SuperadminDashboard() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6">
         {/* Top Restaurants Chart */}
-        <TopRestaurantsChart 
-          selectedPeriod={topRestaurantsPeriod}
-          onPeriodChange={setTopRestaurantsPeriod}
-        />
+        <TopRestaurantsChart />
         
         {/* Earnings Chart */}
         <EarningsChart 

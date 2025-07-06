@@ -7,7 +7,11 @@ import type {
   RestaurantLoginResponse,
   EnhancedRestaurantLoginResponse,
   SuperadminLoginResponse,
-  SuperadminProfile
+  SuperadminProfile,
+  MenuCategory,
+  MenuItem,
+  MenuCategoryFormData,
+  MenuItemFormData
 } from '../../types/api';
 
 // API Configuration
@@ -347,6 +351,146 @@ class ApiService {
 
   getSuperadminProfilePhotoUrl(filename: string): string {
     return `${API_BASE_URL}/files/profile/${filename}`;
+  }
+
+  // Menu Management APIs
+  async getMenuCategories(): Promise<ApiResponse<MenuCategory[]>> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse<MenuCategory[]>(response);
+  }
+
+  async getFullMenu(): Promise<ApiResponse<MenuCategory[]>> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/full`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse<MenuCategory[]>(response);
+  }
+
+  async createMenuCategory(data: MenuCategoryFormData): Promise<ApiResponse<MenuCategory>> {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    if (data.displayOrder !== undefined) formData.append('displayOrder', data.displayOrder.toString());
+    if (data.image) formData.append('image', data.image);
+
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories`, {
+      method: 'POST',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    return this.handleResponse<MenuCategory>(response);
+  }
+
+  async updateMenuCategory(id: string, data: Partial<MenuCategoryFormData>): Promise<ApiResponse<MenuCategory>> {
+    const formData = new FormData();
+    if (data.name) formData.append('name', data.name);
+    if (data.description !== undefined) formData.append('description', data.description);
+    if (data.displayOrder !== undefined) formData.append('displayOrder', data.displayOrder.toString());
+    if (data.image) formData.append('image', data.image);
+
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    return this.handleResponse<MenuCategory>(response);
+  }
+
+  async toggleCategoryStatus(id: string): Promise<ApiResponse<MenuCategory>> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories/${id}/toggle`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse<MenuCategory>(response);
+  }
+
+  async deleteMenuCategory(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse(response);
+  }
+
+  async getMenuItems(categoryId: string): Promise<ApiResponse<MenuItem[]>> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories/${categoryId}/items`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse<MenuItem[]>(response);
+  }
+
+  async createMenuItem(categoryId: string, data: MenuItemFormData): Promise<ApiResponse<MenuItem>> {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    formData.append('price', data.price.toString());
+    if (data.prepTime) formData.append('prepTime', data.prepTime.toString());
+    if (data.ingredients.length > 0) formData.append('ingredients', JSON.stringify(data.ingredients));
+    if (data.options.length > 0) formData.append('options', JSON.stringify(data.options));
+    if (data.displayOrder !== undefined) formData.append('displayOrder', data.displayOrder.toString());
+    if (data.image) formData.append('image', data.image);
+
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/categories/${categoryId}/items`, {
+      method: 'POST',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    return this.handleResponse<MenuItem>(response);
+  }
+
+  async updateMenuItem(id: string, data: Partial<MenuItemFormData>): Promise<ApiResponse<MenuItem>> {
+    const formData = new FormData();
+    if (data.name) formData.append('name', data.name);
+    if (data.description !== undefined) formData.append('description', data.description);
+    if (data.price !== undefined) formData.append('price', data.price.toString());
+    if (data.prepTime !== undefined) formData.append('prepTime', data.prepTime.toString());
+    if (data.ingredients) formData.append('ingredients', JSON.stringify(data.ingredients));
+    if (data.options) formData.append('options', JSON.stringify(data.options));
+    if (data.displayOrder !== undefined) formData.append('displayOrder', data.displayOrder.toString());
+    if (data.image) formData.append('image', data.image);
+
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/items/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    return this.handleResponse<MenuItem>(response);
+  }
+
+  async toggleItemAvailability(id: string): Promise<ApiResponse<MenuItem>> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/items/${id}/toggle`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse<MenuItem>(response);
+  }
+
+  async deleteMenuItem(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${API_BASE_URL}/restaurant/menu/items/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    
+    return this.handleResponse(response);
+  }
+
+  getMenuImageUrl(imagePath: string): string {
+    return `${API_BASE_URL.replace('/api', '')}${imagePath}`;
   }
 }
 

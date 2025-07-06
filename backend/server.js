@@ -17,6 +17,7 @@ import superadminDashboardRoutes from './src/routes/superadminDashboardRoutes.js
 import verificationRoutes from './src/routes/verificationRoutes.js';
 import fileRoutes from './src/routes/fileRoutes.js';
 import staffRoutes from './src/routes/staffRoutes.js';
+import menuRoutes from './src/routes/menuRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +47,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Serve static files for uploads
+app.use('/uploads', express.static('uploads'));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurant/auth', restaurantAuthRoutes);
@@ -53,6 +57,7 @@ app.use('/api/restaurant-owner', restaurantOwnerRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api/restaurant', restaurantStatusRoutes);
 app.use('/api/restaurant/staff', staffRoutes);
+app.use('/api/restaurant/menu', menuRoutes);
 app.use('/api/superadmin/auth', superadminAuthRoutes);
 app.use('/api/superadmin/dashboard', superadminDashboardRoutes);
 app.use('/api/superadmin', superadminRoutes);
