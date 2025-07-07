@@ -4,23 +4,31 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Search, 
-  Filter, 
-  Calendar,
   Eye,
   Check,
   X,
-  ChevronDown,
   FileText,
   Clock,
   CheckCircle,
   XCircle,
   Store,
-  Users,
   Loader2
 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import { StatCard } from '@/components/ui';
-import { Table, Button, Input, Select, Badge, Modal, type Column, type SelectOption } from '@/components/ui';
+import { 
+  Table, 
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  Button, 
+  Input, 
+  Select, 
+  Badge, 
+  type SelectOption
+} from '@/components/ui';
 import Pagination from '@/components/ui/Pagination';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import PDFViewerModal from '@/components/ui/Modal/PDFViewerModal';
@@ -29,7 +37,7 @@ interface Restaurant {
   id: string;
   name: string;
   email: string;
-  address: string;
+  address: string
   type: string;
   verificationStatus: 'pending' | 'verified' | 'rejected';
   status: 'active' | 'suspended';
@@ -76,7 +84,6 @@ export default function VerificationPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [selectedRestaurants, setSelectedRestaurants] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -110,14 +117,6 @@ export default function VerificationPage() {
     isOpen: false,
     filename: '',
     restaurantName: ''
-  });
-
-  const [bulkActionModal, setBulkActionModal] = useState<{
-    isOpen: boolean;
-    action: 'verified' | 'rejected' | null;
-  }>({
-    isOpen: false,
-    action: null
   });
 
   const router = useRouter();
@@ -182,13 +181,11 @@ export default function VerificationPage() {
   // Handle filter changes
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setSelectedRestaurants([]);
   };
 
   // Handle search
   const handleSearch = (value: string) => {
     setFilters(prev => ({ ...prev, search: value }));
-    setSelectedRestaurants([]);
   };
 
   // Handle verification status update
@@ -205,45 +202,6 @@ export default function VerificationPage() {
       console.error('Error updating status:', error);
     } finally {
       setUpdating(null);
-    }
-  };
-
-  // Handle bulk actions
-  const handleBulkAction = async (action: string) => {
-    if (selectedRestaurants.length === 0) return;
-
-    try {
-      setLoading(true);
-      await apiService.bulkUpdateVerificationStatus(selectedRestaurants, action);
-      
-      // Refresh data
-      await fetchData(pagination.currentPage);
-      setSelectedRestaurants([]);
-      setBulkActionModal({ isOpen: false, action: null });
-      
-      console.log(`Bulk ${action} completed for ${selectedRestaurants.length} restaurants`);
-    } catch (error) {
-      console.error('Error in bulk action:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle select all
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedRestaurants(restaurants.map(r => r.id));
-    } else {
-      setSelectedRestaurants([]);
-    }
-  };
-
-  // Handle select restaurant
-  const handleSelectRestaurant = (restaurantId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedRestaurants(prev => [...prev, restaurantId]);
-    } else {
-      setSelectedRestaurants(prev => prev.filter(id => id !== restaurantId));
     }
   };
 
@@ -306,155 +264,65 @@ export default function VerificationPage() {
     });
   };
 
-  // Table columns
-  const columns: Column<Restaurant>[] = [
-    {
-      key: 'select',
-      title: '',
-      width: 50,
-      render: (_, record) => (
-        <input
-          type="checkbox"
-          checked={selectedRestaurants.includes(record.id)}
-          onChange={(e) => handleSelectRestaurant(record.id, e.target.checked)}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-      )
-    },
-    {
-      key: 'restaurant',
-      title: 'Restaurant',
-      render: (_, record) => (
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0 h-10 w-10">
-            {record.logo ? (
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/files/restaurant-icon/${record.logo}`}
-                alt={record.name}
-                className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  target.style.display = 'none';
-                  if (fallback) {
-                    fallback.style.display = 'flex';
-                  }
-                }}
-              />
-            ) : null}
-            <div 
-              className={`h-10 w-10 rounded-full bg-green-500 flex items-center justify-center ${record.logo ? 'hidden' : ''}`}
-            >
-              <Store className="h-5 w-5 text-white" />
-            </div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-900">{record.name}</div>
-            <div className="text-sm text-gray-500">{record.type}</div>
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'contact',
-      title: 'Contact',
-      render: (_, record) => (
-        <div>
-          <div className="text-sm text-gray-900">{record.email}</div>
-          <div className="text-sm text-gray-500">{record.owner.phone}</div>
-        </div>
-      )
-    },
-    {
-      key: 'address',
-      title: 'Address',
-      dataIndex: 'address',
-      render: (value) => (
-        <div className="text-sm text-gray-900 max-w-xs truncate" title={value}>
-          {value}
-        </div>
-      )
-    },
-    {
-      key: 'requestDate',
-      title: 'Request Date',
-      dataIndex: 'createdAt',
-      render: (value) => (
-        <div className="text-sm text-gray-900">{formatDate(value)}</div>
-      )
-    },
-    {
-      key: 'governmentId',
-      title: 'Government ID',
-      render: (_, record) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleViewPDF(record.governmentIdUrl, record.name)}
-          className="text-blue-600 hover:text-blue-800"
-        >
-          <FileText className="w-4 h-4 mr-1" />
-          View PDF
-        </Button>
-      )
-    },
-    {
-      key: 'status',
-      title: 'Status',
-      dataIndex: 'verificationStatus',
-      render: (value) => getStatusBadge(value)
-    },
-    {
-      key: 'actions',
-      title: 'Actions',
-      width: 120,
-      render: (_, record) => (
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => viewRestaurantDetails(record.id)}
-            icon={<Eye className="h-4 w-4" />}
-          />
-          
-          {record.verificationStatus === 'pending' && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleStatusUpdate(record.id, 'verified')}
-                disabled={updating === record.id}
-                className="text-green-600 hover:text-green-800"
-                icon={updating === record.id ? 
-                  <Loader2 className="h-4 w-4 animate-spin" /> : 
-                  <Check className="h-4 w-4" />
-                }
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleStatusUpdate(record.id, 'rejected')}
-                disabled={updating === record.id}
-                className="text-red-600 hover:text-red-800"
-                icon={updating === record.id ? 
-                  <Loader2 className="h-4 w-4 animate-spin" /> : 
-                  <X className="h-4 w-4" />
-                }
-              />
-            </>
-          )}
-        </div>
-      )
-    }
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Restaurant Verification</h1>
-        <p className="text-gray-600 mt-1">Review and manage restaurant verification requests</p>
-      </div>
+<div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+  <div className="mb-6">
+    <h1 className="text-3xl font-semibold text-gray-900">Restaurant Verification</h1>
+    <p className="text-sm text-gray-500 mt-1">Review and manage restaurant verification requests</p>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+    {/* Search */}
+    <div className="md:col-span-4">
+      <Input
+        placeholder="Search restaurants..."
+        value={filters.search}
+        onChange={(e) => handleSearch(e.target.value)}
+        leftIcon={<Search className="w-4 h-4 text-gray-500" />}
+      />
+    </div>
+
+    {/* Status Filter */}
+    <div className="md:col-span-2">
+      <Select
+        value={filters.status}
+        onChange={(value) => handleFilterChange('status', value as string)}
+        options={statusOptions}
+      />
+    </div>
+
+    {/* Sort By */}
+    <div className="md:col-span-2">
+      <Select
+        value={filters.sortBy}
+        onChange={(value) => handleFilterChange('sortBy', value as string)}
+        options={sortOptions}
+      />
+    </div>
+
+    {/* Sort Order */}
+    <div className="md:col-span-2">
+      <Select
+        value={filters.sortOrder}
+        onChange={(value) => handleFilterChange('sortOrder', value as string)}
+        options={sortOrderOptions}
+      />
+    </div>
+
+    {/* Date Range */}
+    <div className="md:col-span-4">
+      <DateRangePicker
+        startDate={filters.startDate}
+        endDate={filters.endDate}
+        onDateChange={handleDateRangeChange}
+      />
+    </div>
+  </div>
+</div>
+
+      
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -480,85 +348,143 @@ export default function VerificationPage() {
         />
       </div>
 
-      {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Input
-            placeholder="Search restaurants..."
-            value={filters.search}
-            onChange={(e) => handleSearch(e.target.value)}
-            leftIcon={<Search className="w-4 h-4" />}
-          />
-          
-          <Select
-            value={filters.status}
-            onChange={(value) => handleFilterChange('status', value as string)}
-            options={statusOptions}
-          />
-          
-          <Select
-            value={filters.sortBy}
-            onChange={(value) => handleFilterChange('sortBy', value as string)}
-            options={sortOptions}
-          />
-          
-          <Select
-            value={filters.sortOrder}
-            onChange={(value) => handleFilterChange('sortOrder', value as string)}
-            options={sortOrderOptions}
-          />
-        </div>
-        
-        <div className="mt-4">
-          <DateRangePicker
-            startDate={filters.startDate}
-            endDate={filters.endDate}
-            onDateChange={handleDateRangeChange}
-          />
-        </div>
-
-        {/* Bulk Actions */}
-        {selectedRestaurants.length > 0 && (
-          <div className="mt-4 flex items-center space-x-3">
-            <span className="text-sm text-gray-600">
-              {selectedRestaurants.length} selected
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBulkActionModal({ isOpen: true, action: 'verified' })}
-              icon={<Check className="h-4 w-4" />}
-            >
-              Accept All
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBulkActionModal({ isOpen: true, action: 'rejected' })}
-              icon={<X className="h-4 w-4" />}
-            >
-              Reject All
-            </Button>
-          </div>
-        )}
-      </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <Table
-          columns={columns}
-          data={restaurants}
-          loading={loading}
-          rowKey="id"
-          hoverable
-          empty={
-            <div className="text-center py-12">
-              <Store className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">No verification requests found</p>
-              <p className="text-gray-500">Verification requests will appear here when restaurants submit them.</p>
-            </div>
-          }
-        />
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading verifications...</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Restaurant</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Request Date</TableHead>
+                <TableHead>Government ID</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-32">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {restaurants.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-12">
+                    <Store className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-900 mb-2">No verification requests found</p>
+                    <p className="text-gray-500">Verification requests will appear here when restaurants submit them.</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                restaurants.map((restaurant) => (
+                  <TableRow key={restaurant.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          {restaurant.logo ? (
+                            <img
+                              src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/files/restaurant-icon/${restaurant.logo}`}
+                              alt={restaurant.name}
+                              className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                target.style.display = 'none';
+                                if (fallback) {
+                                  fallback.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div 
+                            className={`h-10 w-10 rounded-full bg-green-500 flex items-center justify-center ${restaurant.logo ? 'hidden' : ''}`}
+                          >
+                            <Store className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{restaurant.name}</div>
+                          <div className="text-sm text-gray-500">{restaurant.type}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="text-sm text-gray-900">{restaurant.email}</div>
+                        <div className="text-sm text-gray-500">{restaurant.owner.phone}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900 max-w-xs truncate" title={restaurant.address}>
+                        {restaurant.address}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-900">{formatDate(restaurant.createdAt)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewPDF(restaurant.governmentIdUrl, restaurant.name)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        View PDF
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(restaurant.verificationStatus)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => viewRestaurantDetails(restaurant.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        
+                        {restaurant.verificationStatus === 'pending' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(restaurant.id, 'verified')}
+                              disabled={updating === restaurant.id}
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              {updating === restaurant.id ? 
+                                <Loader2 className="h-4 w-4 animate-spin" /> : 
+                                <Check className="h-4 w-4" />
+                              }
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(restaurant.id, 'rejected')}
+                              disabled={updating === restaurant.id}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              {updating === restaurant.id ? 
+                                <Loader2 className="h-4 w-4 animate-spin" /> : 
+                                <X className="h-4 w-4" />
+                              }
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
@@ -575,34 +501,6 @@ export default function VerificationPage() {
           </div>
         )}
       </div>
-
-      {/* Bulk Action Confirmation Modal */}
-      <Modal
-        isOpen={bulkActionModal.isOpen}
-        onClose={() => setBulkActionModal({ isOpen: false, action: null })}
-        title={`Bulk ${bulkActionModal.action === 'verified' ? 'Accept' : 'Reject'} Confirmation`}
-        footer={
-          <div className="flex justify-end space-x-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setBulkActionModal({ isOpen: false, action: null })}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant={bulkActionModal.action === 'verified' ? 'primary' : 'danger'}
-              onClick={() => bulkActionModal.action && handleBulkAction(bulkActionModal.action)}
-            >
-              {bulkActionModal.action === 'verified' ? 'Accept' : 'Reject'} {selectedRestaurants.length} Restaurant(s)
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-gray-600">
-          Are you sure you want to {bulkActionModal.action === 'verified' ? 'accept' : 'reject'} {selectedRestaurants.length} restaurant verification request(s)? 
-          This action cannot be undone.
-        </p>
-      </Modal>
 
       {/* PDF Viewer Modal */}
       <PDFViewerModal

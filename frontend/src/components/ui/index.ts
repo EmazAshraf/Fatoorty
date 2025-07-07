@@ -10,9 +10,17 @@ export type { InputProps } from './Input';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
-// Table
-export { Table } from './Table';
-export type { TableProps, Column } from './Table';
+// Table (Shadcn)
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from './table';
 
 // Modal
 export { Modal, ModalFooter, BaseModal, BaseModalFooter, CategoryFormModal, MenuItemFormModal, PDFViewerModal } from './Modal';

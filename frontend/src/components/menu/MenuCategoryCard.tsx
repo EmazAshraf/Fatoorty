@@ -22,23 +22,18 @@ export default function MenuCategoryCard({
   const [isDeleting, setIsDeleting] = useState(false);
   const [optimisticActive, setOptimisticActive] = useState(category.isActive);
 
-  // Update optimistic state when category prop changes
-  React.useEffect(() => {
+  useEffect(() => {
     setOptimisticActive(category.isActive);
   }, [category.isActive]);
 
   const handleToggleStatus = async () => {
     const newStatus = !optimisticActive;
-    
-    // Optimistically update UI immediately
     setOptimisticActive(newStatus);
-    
     setIsToggling(true);
     try {
       await apiService.toggleCategoryStatus(category._id);
       toast.success(`Category ${category.isActive ? 'disabled' : 'enabled'} successfully`);
     } catch (error) {
-      // Revert optimistic update on error
       setOptimisticActive(category.isActive);
       toast.error(error instanceof Error ? error.message : 'Failed to toggle category status');
     } finally {
@@ -46,18 +41,11 @@ export default function MenuCategoryCard({
     }
   };
 
-  const handleViewItems = () => {
-    router.push(`/restaurant/menu/${category._id}/items`);
-  };
-
-  const handleAddItem = () => {
-    router.push(`/restaurant/menu/${category._id}/items`);
-  };
+  const handleViewItems = () => router.push(`/restaurant/menu/${category._id}/items`);
+  const handleAddItem = () => router.push(`/restaurant/menu/${category._id}/items`);
 
   const handleDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete "${category.name}"? This will also delete all items in this category.`)) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to delete "${category.name}"? This will also delete all items in this category.`)) return;
 
     setIsDeleting(true);
     try {
@@ -77,8 +65,8 @@ export default function MenuCategoryCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-      {/* Category Header */}
+    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden flex flex-col h-full">
+      {/* Image Header */}
       <div className="relative">
         {category.image ? (
           <img
@@ -91,7 +79,6 @@ export default function MenuCategoryCard({
             <ImageIcon className="w-8 h-8 text-gray-400" />
           </div>
         )}
-        
         {/* Status Badge */}
         <div className="absolute top-2 right-2">
           <span
@@ -106,47 +93,41 @@ export default function MenuCategoryCard({
         </div>
       </div>
 
-      {/* Category Content */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {category.name}
-            </h3>
-            {category.description && (
-              <p className="text-sm text-gray-600 mb-2">
-                {category.description}
-              </p>
+      {/* Content */}
+      <div className="p-4 flex flex-col justify-between flex-1">
+        <div className="mb-3 min-h-[120px]"> {/* Adjust height as needed */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
+          {category.description && (
+            <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+              {category.description}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center text-xs text-gray-500 gap-4">
+            <span>{category.itemCount} items</span>
+            <span>Order: {category.displayOrder}</span>
+            {category.itemCount > 0 && (
+              <button
+                onClick={handleViewItems}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                View Items
+              </button>
             )}
-            <div className="flex items-center text-xs text-gray-500 space-x-4">
-              <span>{category.itemCount} items</span>
-              <span>Order: {category.displayOrder}</span>
-              {category.itemCount > 0 && (
-                <button
-                  onClick={handleViewItems}
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  View Items
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
-        {/* Toggle */}
         <div className="mb-4">
           <Toggle
             enabled={optimisticActive}
             onChange={handleToggleStatus}
             disabled={isToggling}
-            label="Enable Category"
-            description="Toggle to enable/disable this category"
+            label='Enable/Disable'
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -172,13 +153,14 @@ export default function MenuCategoryCard({
               Add Item
             </Button>
           </div>
-          
+
           <Button
             variant="danger"
             size="sm"
             leftIcon={<Trash2 className="w-4 h-4" />}
             onClick={handleDelete}
             loading={isDeleting}
+            className="w-full sm:w-auto"
           >
             Delete
           </Button>
@@ -186,4 +168,4 @@ export default function MenuCategoryCard({
       </div>
     </div>
   );
-} 
+}

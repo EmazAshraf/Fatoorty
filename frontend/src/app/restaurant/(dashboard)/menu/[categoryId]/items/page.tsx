@@ -166,8 +166,6 @@ export default function MenuItemsPage() {
     }
   };
 
-
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -209,68 +207,20 @@ export default function MenuItemsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Breadcrumb */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex-1">
-            <HeroUIBreadcrumbs 
-              separator={<ChevronRight className="w-4 h-4" />}
-              className="mb-2"
-            >
-              <HeroUIBreadcrumbItem 
-                key="menu"
-                onPress={() => router.push('/restaurant/menu')}
-                className="cursor-pointer hover:text-blue-600"
-              >
-                Menu Categories
-              </HeroUIBreadcrumbItem>
-              <HeroUIBreadcrumbItem 
-                key="category"
-                className="text-gray-600"
-              >
-                {category.name}
-              </HeroUIBreadcrumbItem>
-              
-            </HeroUIBreadcrumbs>
-            
-            <h2 className="text-2xl font-bold text-gray-900">{category.name}</h2>
-            <p className="text-gray-600 mt-1">
-              Manage menu items in the "{category.name}" category.
-            </p>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div className="flex-1">
+          <div className="hidden md:flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-gray-400 transition-all duration-300 hover:text-gray-900 cursor-pointer  " onClick={() => router.push('/restaurant/menu')}>Menu Categories</h1>
+            <ChevronRight className="w-4 h-4" />
+            <h1 className="text-2xl font-bold text-gray-900">{category.name}</h1>
           </div>
-          <Button
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={handleAddItem}
-          >
-            Add Item
-          </Button>
-        </div>
-
-        {/* Search and Filter */}
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 max-w-md">
-            <Input
-              placeholder="Search items by name, description, or ingredients..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'available' | 'unavailable')}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Items</option>
-            <option value="available">Available Only</option>
-            <option value="unavailable">Unavailable Only</option>
-          </select>
-          
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Items"
           value={stats.totalItems}
@@ -295,6 +245,44 @@ export default function MenuItemsPage() {
           icon={DollarSign}
           loading={loading}
         />
+      </div>
+
+      {/* Search and Actions */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <div className="grid grid-cols-12 gap-4 items-center">
+          {/* Search */}
+          <div className="col-span-4">
+            <Input
+              placeholder="Search items..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leftIcon={<Search className="w-4 h-4 text-gray-500" />}
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="col-span-4">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as 'all' | 'available' | 'unavailable')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Items</option>
+              <option value="available">Available Only</option>
+              <option value="unavailable">Unavailable Only</option>
+            </select>
+          </div>
+
+          {/* Add Item Button */}
+          <div className="col-span-4 flex justify-end">
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={handleAddItem}
+            >
+              Add Item
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Items Grid */}
