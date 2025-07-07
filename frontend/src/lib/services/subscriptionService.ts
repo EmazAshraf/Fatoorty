@@ -34,7 +34,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'static-menu',
     name: 'Static Menu',
-    price: 15,
+    price: 700,
     period: 'month',
     description: 'Perfect for traditional restaurants with waiter service',
     features: [
@@ -53,7 +53,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'pay-at-table',
     name: 'Pay At Table',
-    price: 30,
+    price: 1500,
     period: 'month',
     description: 'Enhanced features with digital ordering capabilities',
     features: [
@@ -74,7 +74,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'Order and pay',
     name: 'Pay At Table Pro',
-    price: 45,
+    price: 2500,
     period: 'month',
     description: 'Complete self-service solution for modern restaurants',
     features: [

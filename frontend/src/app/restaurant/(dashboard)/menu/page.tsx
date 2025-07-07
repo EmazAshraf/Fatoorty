@@ -51,8 +51,6 @@ export default function MenuManagementPage() {
     setShowCategoryModal(true);
   };
 
-
-
   const handleCategoryModalClose = () => {
     setShowCategoryModal(false);
     setEditingCategory(undefined);
@@ -61,8 +59,6 @@ export default function MenuManagementPage() {
   const handleCategorySuccess = () => {
     loadCategories();
   };
-
-
 
   if (loading) {
     return (
@@ -94,40 +90,12 @@ export default function MenuManagementPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Menu Management</h2>
-            <p className="text-gray-600 mt-1">
-              Create and manage your restaurant menu categories and items.
-            </p>
-          </div>
-          <Button
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={handleAddCategory}
-          >
-            Add Category
-          </Button>
-      </div>
-      
-        {/* Search and Filter */}
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 max-w-md">
-            <Input
-              placeholder="Search categories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <Button variant="outline" leftIcon={<Filter className="w-4 h-4" />}>
-            Filter
-          </Button>
-        </div>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Categories"
           value={categories.length}
@@ -152,6 +120,31 @@ export default function MenuManagementPage() {
           icon={Eye}
           loading={loading}
         />
+      </div>
+
+      {/* Search and Actions */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <div className="flex item-center justify-between">
+          {/* Search */}
+          <div className="w-1/3">
+            <Input
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              leftIcon={<Search className="w-4 h-4 text-gray-500" />}
+            />
+          </div>
+
+          {/* Add Category Button */}
+          <div className="w-1/4 flex justify-end">
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={handleAddCategory}
+            >
+              Add Category
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Categories Grid */}

@@ -18,15 +18,20 @@ import {
   Button, 
   Input, 
   Select, 
-  Table, 
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
   Modal, 
   ModalFooter, 
   Badge,
-  type Column,
   type SelectOption 
 } from '@/components/ui';
 import { apiService } from '@/lib/api';
 import type { StaffMember, StaffFormData, StaffStats } from '@/types/api';
+import DateRangePicker from '@/components/ui/DateRangePicker';
 
 // Position options
 const positionOptions: SelectOption[] = [
@@ -69,6 +74,9 @@ export default function StaffManagementPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
   
   // Form data
   const [formData, setFormData] = useState<StaffFormData>({
@@ -131,6 +139,24 @@ export default function StaffManagementPage() {
     const value = e.target.value;
     setSearchTerm(value);
     loadStaff(1, value);
+  };
+
+  // Handle position filter
+  const handlePositionFilter = (value: string | number) => {
+    setSelectedPosition(value as string);
+    // TODO: Implement position filtering in loadStaff
+  };
+
+  // Handle status filter
+  const handleStatusFilter = (value: string | number) => {
+    setSelectedStatus(value as string);
+    // TODO: Implement status filtering in loadStaff
+  };
+
+  // Handle date range filter
+  const handleDateRangeFilter = (startDate: string, endDate: string) => {
+    setDateRange({ startDate, endDate });
+    // TODO: Implement date range filtering in loadStaff
   };
 
   // Handle page change
@@ -246,118 +272,13 @@ export default function StaffManagementPage() {
     }).format(amount);
   };
 
-  // Table columns
-  const columns: Column<StaffMember>[] = [
-    {
-      key: 'image',
-      title: 'Photo',
-      width: 80,
-      render: (_, record) => (
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-          <img 
-            src="/User.jpg" 
-            alt={record.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback to user icon if user.jpg is not found
-              const imgElement = e.currentTarget;
-              const parentDiv = imgElement.parentElement;
-              if (parentDiv) {
-                imgElement.style.display = 'none';
-                const iconElement = parentDiv.querySelector('.fallback-icon') as HTMLElement;
-                if (iconElement) {
-                  iconElement.style.display = 'flex';
-                }
-              }
-            }}
-          />
-          <Users className="w-5 h-5 text-gray-400 hidden fallback-icon" />
-        </div>
-      )
-    },
-    {
-      key: 'name',
-      title: 'Name',
-      sortable: true,
-    },
-    {
-      key: 'email',
-      title: 'Email',
-      sortable: true,
-    },
-    {
-      key: 'phone',
-      title: 'Phone',
-      sortable: true,
-    },
-    {
-      key: 'position',
-      title: 'Position',
-      sortable: true,
-      render: (value) => (
-        <span className="capitalize">{value}</span>
-      )
-    },
-    {
-      key: 'salary',
-      title: 'Salary',
-      sortable: true,
-      render: (value) => formatCurrency(value as number)
-    },
-    {
-      key: 'joiningDate',
-      title: 'Joining Date',
-      sortable: true,
-      render: (value) => dayjs(value as string).format('MMM DD, YYYY')
-    },
-    {
-      key: 'status',
-      title: 'Status',
-      render: (value) => (
-        <Badge 
-          variant={value === 'active' ? 'success' : 'error'}
-          size="sm"
-        >
-          {value}
-        </Badge>
-      )
-    },
-    {
-      key: 'actions',
-      title: 'Actions',
-      width: 120,
-      render: (_, record) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openEditModal(record)}
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openDeleteModal(record)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-      )
-    }
-  ];
+
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Staff Management</h1>
-        <Button
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => setAddModalOpen(true)}
-        >
-          Add Staff Member
-        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -409,27 +330,153 @@ export default function StaffManagementPage() {
 
       {/* Search and Filters */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          {/* Search */}
+          <div className="md:col-span-3">
             <Input
               placeholder="Search staff members..."
               value={searchTerm}
               onChange={handleSearch}
-              leftIcon={<Search className="w-4 h-4" />}
+              leftIcon={<Search className="w-4 h-4 text-gray-500" />}
             />
+          </div>
+
+          {/* Position Filter */}
+          <div className="md:col-span-2">
+            <Select
+              value={selectedPosition}
+              onChange={handlePositionFilter}
+              options={[
+                { value: '', label: 'All Positions' },
+                ...positionOptions
+              ]}
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="md:col-span-2">
+            <Select
+              value={selectedStatus}
+              onChange={handleStatusFilter}
+              options={[
+                { value: '', label: 'All Status' },
+                ...statusOptions
+              ]}
+            />
+          </div>
+
+          {/* Date Range */}
+          <div className="md:col-span-3">
+            <DateRangePicker
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              onDateChange={handleDateRangeFilter}
+            />
+          </div>
+
+          {/* Add Staff Button */}
+          <div className="md:col-span-2 flex justify-end">
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setAddModalOpen(true)}
+            >
+              Add Staff
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Staff Table */}
       <div className="bg-white rounded-lg shadow">
-        <Table
-          columns={columns}
-          data={staff}
-          loading={loading}
-          rowKey="_id"
-          hoverable
-        />
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading staff...</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-20">Photo</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Position</TableHead>
+                <TableHead>Salary</TableHead>
+                <TableHead>Joining Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-32">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {staff.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                    No staff members found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                staff.map((staffMember) => (
+                  <TableRow key={staffMember._id}>
+                    <TableCell>
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src="/User.jpg" 
+                          alt={staffMember.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const imgElement = e.currentTarget;
+                            const parentDiv = imgElement.parentElement;
+                            if (parentDiv) {
+                              imgElement.style.display = 'none';
+                              const iconElement = parentDiv.querySelector('.fallback-icon') as HTMLElement;
+                              if (iconElement) {
+                                iconElement.style.display = 'flex';
+                              }
+                            }
+                          }}
+                        />
+                        <Users className="w-5 h-5 text-gray-400 hidden fallback-icon" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{staffMember.name}</TableCell>
+                    <TableCell>{staffMember.email}</TableCell>
+                    <TableCell>{staffMember.phone}</TableCell>
+                    <TableCell className="capitalize">{staffMember.position}</TableCell>
+                    <TableCell>{formatCurrency(staffMember.salary)}</TableCell>
+                    <TableCell>{dayjs(staffMember.joiningDate).format('MMM DD, YYYY')}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={staffMember.status === 'active' ? 'success' : 'error'}
+                        size="sm"
+                      >
+                        {staffMember.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditModal(staffMember)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDeleteModal(staffMember)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* Add Staff Modal */}

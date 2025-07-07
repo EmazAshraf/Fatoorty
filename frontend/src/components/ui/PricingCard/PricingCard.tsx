@@ -69,8 +69,8 @@ export default function PricingCard({
           {/* Price */}
           <div className="mb-6">
             <div className="flex items-baseline justify-center">
-              <span className="text-5xl font-bold text-gray-900">${price}</span>
-              <span className="text-xl text-gray-500 ml-1">/{period}</span>
+              <span className="text-5xl font-bold text-gray-900">{price}</span>
+              <span className="text-xl text-gray-500 ml-1">EGP/{period}</span>
             </div>
           </div>
         </div>
