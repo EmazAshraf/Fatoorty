@@ -4,6 +4,7 @@ import RestaurantOwner from '../../models/RestaurantOwner.js';
 import Restaurant from '../../models/Restaurant.js';
 import { generateToken } from '../services/authService.js';
 import { createSuccessResponse, createErrorResponse } from '../utils/responseHandler.js';
+import bcrypt from 'bcryptjs';
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -216,4 +217,101 @@ export const updateProfile = asyncHandler(async (req, res) => {
     { new: true }
   ).select('-password');
   res.json({ owner });
+});
+
+// Get restaurant owner profile
+export const getRestaurantOwnerProfile = asyncHandler(async (req, res) => {
+  const owner = await RestaurantOwner.findById(req.user._id).select('-password');
+  const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+  
+  if (!owner) {
+    return res.status(404).json({ message: 'Restaurant owner not found' });
+  }
+
+  res.json({ 
+    owner: {
+      ...owner.toObject(),
+      restaurant: restaurant || null
+    }
+  });
+});
+
+// Update restaurant owner profile
+export const updateRestaurantOwnerProfile = asyncHandler(async (req, res) => {
+  const { name, email, phone } = req.body;
+  
+  // Check if email is already taken by another user
+  if (email) {
+    const existingOwner = await RestaurantOwner.findOne({ 
+      email, 
+      _id: { $ne: req.user._id } 
+    });
+    if (existingOwner) {
+      return res.status(400).json({ message: 'Email is already in use' });
+    }
+  }
+
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (email) updateData.email = email;
+  if (phone) updateData.phone = phone;
+
+  const owner = await RestaurantOwner.findByIdAndUpdate(
+    req.user._id,
+    updateData,
+    { new: true }
+  ).select('-password');
+
+  if (!owner) {
+    return res.status(404).json({ message: 'Restaurant owner not found' });
+  }
+
+  res.json({ owner });
+});
+
+// Update restaurant owner profile photo
+export const updateRestaurantOwnerProfilePhoto = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  const photoUrl = req.file.filename;
+  
+  const owner = await RestaurantOwner.findByIdAndUpdate(
+    req.user._id,
+    { profilePhoto: photoUrl },
+    { new: true }
+  ).select('-password');
+
+  if (!owner) {
+    return res.status(404).json({ message: 'Restaurant owner not found' });
+  }
+
+  res.json({ 
+    owner,
+    message: 'Profile photo updated successfully',
+    filename: photoUrl
+  });
+});
+
+// Change restaurant owner password
+export const changeRestaurantOwnerPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const owner = await RestaurantOwner.findById(req.user._id);
+  if (!owner) {
+    return res.status(404).json({ message: 'Restaurant owner not found' });
+  }
+
+  // Verify current password
+  const isPasswordValid = await owner.comparePassword(currentPassword);
+  if (!isPasswordValid) {
+    return res.status(400).json({ message: 'Current password is incorrect' });
+  }
+
+  // Update password
+  owner.password = newPassword;
+  await owner.save();
+
+  res.json({ message: 'Password changed successfully' });
 }); 
