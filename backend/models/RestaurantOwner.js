@@ -24,6 +24,14 @@ const restaurantOwnerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
+    sessionId: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

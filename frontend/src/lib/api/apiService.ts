@@ -492,6 +492,73 @@ class ApiService {
   getMenuImageUrl(imagePath: string): string {
     return `${API_BASE_URL.replace('/api', '')}${imagePath}`;
   }
+
+  // Restaurant Owner Profile APIs
+  async getRestaurantOwnerProfile(): Promise<{ owner: any }> {
+    const response = await fetch(`${API_BASE_URL}/restaurant-owner/profile`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to fetch profile with status ${response.status}`);
+    }
+    
+    return response.json();
+  }
+
+  async updateRestaurantOwnerProfile(data: { name?: string; email?: string; phone?: string }): Promise<{ owner: any }> {
+    const response = await fetch(`${API_BASE_URL}/restaurant-owner/profile`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to update profile with status ${response.status}`);
+    }
+    
+    return response.json();
+  }
+
+  async updateRestaurantOwnerProfilePhoto(file: File): Promise<{ owner: any; message: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+
+    const response = await fetch(`${API_BASE_URL}/restaurant-owner/profile/photo`, {
+      method: 'PUT',
+      headers: this.getAuthHeadersForFormData(),
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to update profile photo with status ${response.status}`);
+    }
+    
+    return response.json();
+  }
+
+  async changeRestaurantOwnerPassword(data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/restaurant-owner/password`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to change password with status ${response.status}`);
+    }
+    
+    return response.json();
+  }
+
+  getRestaurantOwnerProfilePhotoUrl(filename: string): string {
+    return `${API_BASE_URL.replace('/api', '')}/uploads/${filename}`;
+  }
 }
 
 // Export singleton instance
