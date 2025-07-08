@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import { Upload, X, RotateCw, ZoomIn, ZoomOut, Check } from 'lucide-react';
 import 'react-image-crop/dist/ReactCrop.css';
-
+import Image from 'next/image';
 interface ImageCropperProps {
   onImageCropped: (croppedImageFile: File) => void;
   onCancel: () => void;
@@ -46,10 +46,9 @@ export default function ImageCropper({ onImageCropped, onCancel, currentImage }:
     }
   };
 
-  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+  const onImageLoad = useCallback(() => {
     if (aspect) {
-      const { width, height } = e.currentTarget;
-      setCrop(centerAspectCrop(width, height, aspect));
+      setCrop(centerAspectCrop());
     }
   }, [aspect]);
 
@@ -163,11 +162,7 @@ export default function ImageCropper({ onImageCropped, onCancel, currentImage }:
     }
   };
 
-  const centerAspectCrop = (
-    mediaWidth: number,
-    mediaHeight: number,
-    aspect: number,
-  ): Crop => {
+  const centerAspectCrop = (): Crop => {
     return {
       unit: '%',
       width: 90,
@@ -259,13 +254,15 @@ export default function ImageCropper({ onImageCropped, onCancel, currentImage }:
                 minHeight={50}
                 className="max-w-full"
               >
-                <img
+                <Image
                   ref={imgRef}
                   alt="Crop me"
                   src={imgSrc}
                   style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
                   onLoad={onImageLoad}
                   className="max-w-full h-auto"
+                  width={128}
+                  height={128}
                 />
               </ReactCrop>
             </div>

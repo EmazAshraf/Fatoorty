@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiService } from '../api/apiService';
 import type { ApiResponse } from '../../types/api';
 
 interface UseApiOptions {
   immediate?: boolean;
-  dependencies?: any[];
+  dependencies?: unknown[];
 }
 
 interface UseApiState<T> {
@@ -14,7 +14,7 @@ interface UseApiState<T> {
   success: boolean;
 }
 
-export function useApi<T = any>(
+export function useApi<T = unknown>(
   apiCall: () => Promise<ApiResponse<T>>,
   options: UseApiOptions = {}
 ) {
@@ -67,11 +67,16 @@ export function useApi<T = any>(
     });
   }, []);
 
+  // Create a stable dependency key from the dependencies array
+  const dependencyKey = useMemo(() => {
+    return JSON.stringify(dependencies);
+  }, [dependencies]);
+
   useEffect(() => {
     if (immediate) {
       execute();
     }
-  }, [execute, immediate, ...dependencies]);
+  }, [execute, immediate, dependencyKey]);
 
   return {
     ...state,
@@ -95,13 +100,13 @@ export function useRestaurantVerifications() {
 }
 
 // Hook for paginated data
-export function usePaginatedApi<T = any>(
-  apiCall: (params: any) => Promise<ApiResponse<T>>,
-  initialParams: any = {}
+export function usePaginatedApi<T = unknown>(
+  apiCall: (params: Record<string, unknown>) => Promise<ApiResponse<T>>,
+  initialParams: Record<string, unknown> = {}
 ) {
   const [params, setParams] = useState(initialParams);
   const [allData, setAllData] = useState<T[]>([]);
-  const [pagination, setPagination] = useState({
+  const [pagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalCount: 0,
@@ -126,20 +131,20 @@ export function usePaginatedApi<T = any>(
     }
   }, [data]);
 
-  const updateParams = useCallback((newParams: Partial<typeof params>) => {
-    setParams((prev: typeof params) => ({ ...prev, ...newParams }));
+  const updateParams = useCallback((newParams: Partial<Record<string, unknown>>) => {
+    setParams((prev: Record<string, unknown>) => ({ ...prev, ...newParams }));
   }, []);
 
   const goToPage = useCallback((page: number) => {
-    updateParams({ page });
+    updateParams({ page: page.toString() });
   }, [updateParams]);
 
   const search = useCallback((searchTerm: string) => {
-    updateParams({ search: searchTerm, page: 1 });
+    updateParams({ search: searchTerm, page: '1' });
   }, [updateParams]);
 
   const sort = useCallback((sortBy: string, sortOrder: 'asc' | 'desc') => {
-    updateParams({ sortBy, sortOrder, page: 1 });
+    updateParams({ sortBy, sortOrder, page: '1' });
   }, [updateParams]);
 
   return {

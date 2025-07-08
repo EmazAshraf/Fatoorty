@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, X } from 'lucide-react';
 import BaseModal, { BaseModalFooter } from './BaseModal';
-import { Input, Button } from '../';
+import { Input } from '../';
 import { MenuCategory, MenuCategoryFormData } from '../../../types/api';
 import { apiService } from '../../../lib/api';
 import { toast } from 'react-toastify';
-
+import Image from 'next/image';
 interface CategoryFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -220,10 +220,12 @@ export default function CategoryFormModal({
           
           {imagePreview ? (
             <div className="relative">
-              <img
+              <Image
                 src={imagePreview}
                 alt="Category preview"
                 className="w-full h-32 object-cover rounded-lg border border-gray-300"
+                width={128}
+                height={128}
               />
               <button
                 type="button"

@@ -241,7 +241,7 @@ export default function SubscriptionPlanPage() {
             Feature Comparison
           </h3>
           <p className="text-gray-600 mt-1">
-            Compare what's included in each subscription plan
+            Compare what&apos;s included in each subscription plan
           </p>
         </div>
         

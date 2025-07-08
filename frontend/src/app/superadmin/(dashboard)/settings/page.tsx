@@ -5,7 +5,7 @@ import { User, Lock, Camera, Edit2, Save } from 'lucide-react';
 import { Input, Button } from '@/components/ui';
 import { apiService } from '@/lib/api';
 import { toast } from 'react-toastify';
-
+import Image from 'next/image';
 interface SuperadminProfile {
   _id: string;
   name: string;
@@ -61,8 +61,8 @@ export default function SuperadminSettings() {
         name: response.superadmin.name,
         email: response.superadmin.email,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to fetch profile');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch profile');
     } finally {
       setLoading(false);
     }
@@ -92,8 +92,8 @@ export default function SuperadminSettings() {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update profile photo');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile photo');
     } finally {
       setUploadingPhoto(false);
     }
@@ -127,8 +127,8 @@ export default function SuperadminSettings() {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setUpdating(false);
     }
@@ -183,8 +183,8 @@ export default function SuperadminSettings() {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to change password');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to change password');
     } finally {
       setUpdating(false);
     }
@@ -216,10 +216,12 @@ export default function SuperadminSettings() {
               <div className="relative inline-block">
                 <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mx-auto">
                   {profile?.profilePhoto ? (
-                    <img
+                    <Image
                       src={apiService.getSuperadminProfilePhotoUrl(profile.profilePhoto)}
                       alt="Profile"
                       className="w-full h-full object-cover"
+                      width={128}
+                      height={128}
                     />
                   ) : (
                     <User className="w-16 h-16 text-gray-400" />

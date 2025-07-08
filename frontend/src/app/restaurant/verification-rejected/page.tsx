@@ -51,11 +51,6 @@ export default function VerificationRejectedPage() {
     setLoading(false);
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push('/restaurant/login');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">

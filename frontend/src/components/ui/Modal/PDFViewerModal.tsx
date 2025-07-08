@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Download, AlertCircle, Loader2 } from 'lucide-react';
 import BaseModal from './BaseModal';
 import { Button } from '../Button';
@@ -18,6 +18,21 @@ export default function PDFViewerModal({ isOpen, onClose, filename, restaurantNa
   const [error, setError] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
 
+  const loadPDF = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const blob = await apiService.downloadGovernmentId(filename);
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load PDF');
+    } finally {
+      setLoading(false);
+    }
+  }, [filename]);
+
   useEffect(() => {
     if (isOpen && filename) {
       loadPDF();
@@ -28,22 +43,7 @@ export default function PDFViewerModal({ isOpen, onClose, filename, restaurantNa
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [isOpen, filename, pdfUrl]);
-
-  const loadPDF = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      const blob = await apiService.downloadGovernmentId(filename);
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load PDF');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isOpen, filename, pdfUrl, loadPDF]);
 
   const handleDownload = () => {
     if (pdfUrl) {

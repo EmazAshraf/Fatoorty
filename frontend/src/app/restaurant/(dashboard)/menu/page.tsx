@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Grid3X3, CheckCircle, Package, Eye } from 'lucide-react';
+import { Plus, Search, Grid3X3, CheckCircle, Package, Eye } from 'lucide-react';
 import { Button, Input, StatCard } from '../../../../components/ui';
 import MenuCategoryCard from '../../../../components/menu/MenuCategoryCard';
 import CategoryFormModal from '../../../../components/ui/Modal/CategoryFormModal';
@@ -155,7 +155,7 @@ export default function MenuManagementPage() {
               <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
               <p className="text-gray-500">
-                No categories match your search term "{searchTerm}".
+                No categories match your search term `&apos;{searchTerm}&apos;`.
               </p>
             </>
           ) : (

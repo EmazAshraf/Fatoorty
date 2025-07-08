@@ -7,6 +7,7 @@ import { Input, Button, Select } from '@/components/ui';
 import Header from '@/components/layout/Header';
 import { apiService } from '@/lib/api';
 import { User, Mail, Lock, Phone, Store } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 const restaurantTypes = [
   { value: 'fast-food', label: 'Fast Food' },
@@ -40,9 +41,6 @@ export default function RestaurantSignup() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (field: string, file: File | null) => {
-    setFormData(prev => ({ ...prev, [field]: file }));
-  };
 
   const validateStep1 = () => {
     if (!formData.ownerName || !formData.email || !formData.password || !formData.phone) {
@@ -99,15 +97,15 @@ export default function RestaurantSignup() {
       const response = await apiService.signupRestaurant(submitData);
       
       if (response.success && response.data) {
-        localStorage.setItem('token', (response.data as any).token);
+        localStorage.setItem('token', (response.data as { token: string }).token);
         localStorage.setItem('userType', 'restaurant');
         
         router.push('/restaurant/verification-pending');
       } else {
         setError(response.message || 'Signup failed');
       }
-    } catch (err: any) {
-      setError(err.message || 'Signup failed');
+    } catch (err) {
+      setError(getErrorMessage(err) || 'Signup failed');
     } finally {
       setLoading(false);
     }

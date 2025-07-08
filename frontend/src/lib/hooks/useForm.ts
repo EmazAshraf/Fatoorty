@@ -9,11 +9,11 @@ interface ValidationRule {
   phone?: boolean;
   min?: number;
   max?: number;
-  custom?: (value: any) => string | null;
+  custom?: (value: unknown) => string | null;
 }
 
 interface FormField {
-  value: any;
+  value: unknown;
   error: string | null;
   touched: boolean;
   rules?: ValidationRule;
@@ -25,13 +25,13 @@ interface UseFormOptions<T> {
   onSubmit?: (values: T) => Promise<void> | void;
 }
 
-export function useForm<T extends Record<string, any>>({
+export function useForm<T extends Record<string, unknown>>({
   initialValues,
   validationRules = {},
   onSubmit
 }: UseFormOptions<T>) {
   const [fields, setFields] = useState<Record<keyof T, FormField>>(() => {
-    const initial: Record<keyof T, FormField> = {} as any;
+    const initial: Record<keyof T, FormField> = {} as Record<keyof T, FormField>;
     
     Object.keys(initialValues).forEach(key => {
       initial[key as keyof T] = {
@@ -49,7 +49,7 @@ export function useForm<T extends Record<string, any>>({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Validation functions
-  const validateField = useCallback((name: keyof T, value: any, rules?: ValidationRule): string | null => {
+  const validateField = useCallback((name: keyof T, value: unknown, rules?: ValidationRule): string | null => {
     if (!rules) return null;
 
     // Required validation
@@ -128,7 +128,7 @@ export function useForm<T extends Record<string, any>>({
   }, [fields, validateField]);
 
   // Field operations
-  const setValue = useCallback((name: keyof T, value: any) => {
+  const setValue = useCallback((name: keyof T, value: unknown) => {
     setFields(prev => ({
       ...prev,
       [name]: {
@@ -161,7 +161,7 @@ export function useForm<T extends Record<string, any>>({
   }, [validateField]);
 
   const resetForm = useCallback(() => {
-    const resetFields: Record<keyof T, FormField> = {} as any;
+    const resetFields: Record<keyof T, FormField> = {} as Record<keyof T, FormField>;
     
     Object.keys(initialValues).forEach(key => {
       resetFields[key as keyof T] = {
@@ -199,7 +199,7 @@ export function useForm<T extends Record<string, any>>({
     const values = {} as T;
     
     Object.keys(fields).forEach(key => {
-      values[key as keyof T] = fields[key as keyof T].value;
+      values[key as keyof T] = fields[key as keyof T].value as T[keyof T];
     });
     
     return values;
@@ -211,7 +211,7 @@ export function useForm<T extends Record<string, any>>({
     
     return {
       value: field.value,
-      onChange: (value: any) => setValue(name, value),
+      onChange: (value: unknown) => setValue(name, value),
       onBlur: () => touchField(name),
       error: field.error,
       name: String(name)

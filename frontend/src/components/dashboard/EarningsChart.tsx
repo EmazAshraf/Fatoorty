@@ -1,6 +1,6 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Button, Select } from '@/components/ui';
 import { Calendar } from 'lucide-react';
 
@@ -19,10 +19,7 @@ interface EarningsChartProps {
   onPeriodChange: (period: string) => void;
 }
 
-const periodOptions = [
-  { value: 'restaurant', label: 'Restaurant' },
-  { value: 'all', label: 'All Restaurants' }
-];
+
 
 export default function EarningsChart({ selectedPeriod, onPeriodChange }: EarningsChartProps) {
   return (

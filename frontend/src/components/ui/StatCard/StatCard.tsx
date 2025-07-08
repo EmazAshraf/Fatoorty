@@ -1,15 +1,4 @@
-import { ReactNode } from 'react';
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
-  loading?: boolean;
-}
+import type { StatCardProps } from '@/types/components';
 
 export default function StatCard({ title, value, icon: Icon, trend, loading }: StatCardProps) {
   if (loading) {

@@ -5,7 +5,7 @@ import { Button, Toggle } from '../ui';
 import { MenuCategory } from '../../types/api';
 import { apiService } from '../../lib/api';
 import { toast } from 'react-toastify';
-
+import Image from 'next/image';
 interface MenuCategoryCardProps {
   category: MenuCategory;
   onEdit: (category: MenuCategory) => void;
@@ -69,10 +69,12 @@ export default function MenuCategoryCard({
       {/* Image Header */}
       <div className="relative">
         {category.image ? (
-          <img
+          <Image
             src={getImageUrl(category.image) || ''}
             alt={category.name}
             className="w-full h-32 object-cover"
+            width={128}
+            height={128}
           />
         ) : (
           <div className="w-full h-32 bg-gray-100 flex items-center justify-center">

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Lock, Camera, Edit2, Save, Building, Phone, Mail } from 'lucide-react';
+import { User, Lock, Camera, Save, Building, Phone, Mail } from 'lucide-react';
 import { Input, Button } from '@/components/ui';
 import { apiService } from '@/lib/api';
 import { toast } from 'react-toastify';
-
+import Image from 'next/image';
 interface RestaurantOwnerProfile {
   _id: string;
   name: string;
@@ -68,14 +68,15 @@ export default function RestaurantSettingsPage() {
     try {
       setLoading(true);
       const response = await apiService.getRestaurantOwnerProfile();
-      setProfile(response.owner);
+      const owner = response.owner as unknown as RestaurantOwnerProfile;
+      setProfile(owner);
       setProfileForm({
-        name: response.owner.name,
-        email: response.owner.email,
-        phone: response.owner.phone,
+        name: owner.name,
+        email: owner.email,
+        phone: owner.phone,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to fetch profile');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to fetch profile');
     } finally {
       setLoading(false);
     }
@@ -100,13 +101,13 @@ export default function RestaurantSettingsPage() {
     try {
       setUploadingPhoto(true);
       const response = await apiService.updateRestaurantOwnerProfilePhoto(file);
-      setProfile(response.owner);
+      setProfile(response.owner as unknown as RestaurantOwnerProfile);
       toast.success('Profile photo updated successfully', {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update profile photo');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile photo');
     } finally {
       setUploadingPhoto(false);
     }
@@ -137,13 +138,13 @@ export default function RestaurantSettingsPage() {
         phone: profileForm.phone.trim(),
       });
       
-      setProfile(response.owner);
+      setProfile(response.owner as unknown as RestaurantOwnerProfile);
       toast.success('Profile updated successfully', {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setUpdating(false);
     }
@@ -198,8 +199,8 @@ export default function RestaurantSettingsPage() {
         position: "top-right",
         autoClose: 3000,
       });
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to change password');
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to change password');
     } finally {
       setUpdating(false);
     }
@@ -231,10 +232,12 @@ export default function RestaurantSettingsPage() {
               <div className="relative inline-block">
                 <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mx-auto">
                   {profile?.profilePhoto ? (
-                    <img
+                    <Image
                       src={apiService.getRestaurantOwnerProfilePhotoUrl(profile.profilePhoto)}
                       alt="Profile"
                       className="w-full h-full object-cover"
+                      width={128}
+                      height={128}
                     />
                   ) : (
                     <User className="w-16 h-16 text-gray-400" />

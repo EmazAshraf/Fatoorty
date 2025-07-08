@@ -5,16 +5,13 @@ import {
   LayoutDashboard, 
   Building2, 
   Globe, 
-  FileText,
   ChefHat,
   QrCode,
   BarChart3,
   Users,
-  Star,
   Shield,
   Zap,
   ArrowRight,
-  CheckCircle,
   Sparkles
 } from 'lucide-react';
 
@@ -120,7 +117,7 @@ export default function ModernLandingPage() {
             className="text-lg text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
           >
             Transform your restaurant operations with cutting-edge technology. 
-            From QR code menus to real-time analytics, we've got everything you need 
+            From QR code menus to real-time analytics, we have got everything you need 
             to elevate your dining experience.
           </motion.p>
 
@@ -137,7 +134,7 @@ export default function ModernLandingPage() {
                 boxShadow: "0 0 40px rgba(109, 114, 207, 0.6)"
               }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => window.location.href = '/restaurant/login'}
+              onClick={() => window.location.href = '/restaurant/signup'}
               className="group relative px-8 py-4 bg-gradient-to-r from-[#6D72CF] to-purple-600 text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300"
             >
               <motion.div

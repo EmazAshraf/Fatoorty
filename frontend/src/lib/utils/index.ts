@@ -135,7 +135,7 @@ export const unique = <T>(array: T[], key?: keyof T): T[] => {
 };
 
 // Object utilities
-export const omit = <T extends Record<string, any>, K extends keyof T>(
+export const omit = <T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: K[]
 ): Omit<T, K> => {
@@ -144,7 +144,7 @@ export const omit = <T extends Record<string, any>, K extends keyof T>(
   return result;
 };
 
-export const pick = <T extends Record<string, any>, K extends keyof T>(
+export const pick = <T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: K[]
 ): Pick<T, K> => {
@@ -157,7 +157,7 @@ export const pick = <T extends Record<string, any>, K extends keyof T>(
   return result;
 };
 
-export const isEmpty = (value: any): boolean => {
+export const isEmpty = (value: unknown): boolean => {
   if (value == null) return true;
   if (typeof value === 'string') return value.trim().length === 0;
   if (Array.isArray(value)) return value.length === 0;
@@ -181,7 +181,7 @@ export const storage = {
     }
   },
   
-  set: (key: string, value: any): void => {
+  set: (key: string, value: unknown): void => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
@@ -207,7 +207,7 @@ export const storage = {
 };
 
 // Debounce utility
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -220,7 +220,7 @@ export const debounce = <T extends (...args: any[]) => any>(
 };
 
 // Throttle utility
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): ((...args: Parameters<T>) => void) => {

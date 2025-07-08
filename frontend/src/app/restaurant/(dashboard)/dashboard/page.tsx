@@ -5,8 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { LogOut, ShoppingCart, DollarSign, Users, Utensils, QrCode, ClipboardList } from 'lucide-react';
 
+interface DashboardUser {
+  name: string;
+}
+
 export default function RestaurantDashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<DashboardUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

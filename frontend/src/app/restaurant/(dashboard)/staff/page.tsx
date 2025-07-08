@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -12,7 +12,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import dayjs from 'dayjs';
-
+import Image from 'next/image'; 
 // Import our new UI components
 import { 
   Button, 
@@ -70,9 +70,7 @@ export default function StaffManagementPage() {
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   
   // Pagination and filters
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -103,11 +101,7 @@ export default function StaffManagementPage() {
       if (response.success) {
         console.log('setstaff', response.data);
         setStaff(response.data || []);
-        if (response.pagination) {
-          setCurrentPage(response.pagination.currentPage);
-          setTotalPages(response.pagination.totalPages);
-          setTotalCount(response.pagination.totalCount);
-        }
+       
       }
     } catch (error) {
       console.error('Error loading staff:', error);
@@ -159,10 +153,7 @@ export default function StaffManagementPage() {
     // TODO: Implement date range filtering in loadStaff
   };
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    loadStaff(page, searchTerm);
-  };
+
 
   // Reset form
   const resetForm = () => {
@@ -420,7 +411,7 @@ export default function StaffManagementPage() {
                   <TableRow key={staffMember._id}>
                     <TableCell>
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        <img 
+                        <Image 
                           src="/User.jpg" 
                           alt={staffMember.name}
                           className="w-full h-full object-cover"
@@ -435,6 +426,8 @@ export default function StaffManagementPage() {
                               }
                             }
                           }}
+                          width={40}
+                          height={40}
                         />
                         <Users className="w-5 h-5 text-gray-400 hidden fallback-icon" />
                       </div>

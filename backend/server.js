@@ -35,8 +35,8 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://localhost:3001',
-  ],
+    process.env.CORS_ORIGIN, // Add your production frontend URL here
+  ].filter(Boolean), // Remove any undefined values
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

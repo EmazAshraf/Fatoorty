@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Camera, X, Upload } from 'lucide-react';
 import ImageCropper from './ImageCropper';
-
+import Image from 'next/image';
 interface IconUploadProps {
   label: string;
   value?: File | null;
@@ -59,10 +59,12 @@ export default function IconUpload({
         <div className="relative">
           {previewUrl ? (
             <div className="relative w-20 h-20 rounded-xl border-2 border-gray-200 overflow-hidden bg-white">
-              <img
+              <Image
                 src={previewUrl}
                 alt="Restaurant icon preview"
                 className="w-full h-full object-cover"
+                width={128}
+                height={128}
               />
               <button
                 type="button"
@@ -92,7 +94,7 @@ export default function IconUpload({
           </button>
           
           <p className="text-xs text-gray-500 mt-2">
-            Square images work best. We'll help you crop it to the perfect size.
+            Square images work best. We&apos;ll help you crop it to the perfect size.
           </p>
         </div>
       </div>
