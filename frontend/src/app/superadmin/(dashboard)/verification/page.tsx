@@ -32,7 +32,7 @@ import {
 import Pagination from '@/components/ui/Pagination';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import PDFViewerModal from '@/components/ui/Modal/PDFViewerModal';
-
+import Image from 'next/image';
 interface Restaurant {
   id: string;
   name: string;
@@ -171,7 +171,7 @@ export default function VerificationPage() {
   // Initial load
   useEffect(() => {
     fetchData(1);
-  }, [filters]);
+  }, [filters, fetchData]);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -385,10 +385,12 @@ export default function VerificationPage() {
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0 h-10 w-10">
                           {restaurant.logo ? (
-                            <img
+                            <Image
                               src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/files/restaurant-icon/${restaurant.logo}`}
                               alt={restaurant.name}
                               className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
+                              width={40}
+                              height={40}
                               onError={(e) => {
                                 const target = e.currentTarget;
                                 const fallback = target.nextElementSibling as HTMLElement;

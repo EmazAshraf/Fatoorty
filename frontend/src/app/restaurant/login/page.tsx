@@ -61,17 +61,22 @@ export default function RestaurantLogin() {
       // Handle other errors
       setError(response.message || 'Login failed. Please try again.');
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error:', err);
-      
+    
       // Handle network errors gracefully
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError('Unable to connect to server. Please check your internet connection and try again.');
+      if (err instanceof Error) {
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          setError('Unable to connect to server. Please check your internet connection and try again.');
+        } else {
+          setError(getErrorMessage(err) || 'An unexpected error occurred. Please try again.');
+        }
       } else {
-        setError(getErrorMessage(err) || 'An unexpected error occurred. Please try again.');
+        // Handle unknown error shapes (non-Error objects)
+        setError('An unexpected error occurred. Please try again.');
       }
-      
-    } finally {
+    }
+     finally {
       setLoading(false);
     }
 

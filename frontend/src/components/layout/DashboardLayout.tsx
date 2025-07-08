@@ -20,14 +20,13 @@ import {
   CreditCard,
   Crown,
   Menu,
-  X,
   Bell
 } from 'lucide-react';
 
 export interface SidebarItem {
   name: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
 interface DashboardLayoutProps {

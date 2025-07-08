@@ -8,7 +8,7 @@ export interface BaseComponentProps {
 export interface SidebarItem {
   name: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   badge?: string | number;
   children?: SidebarItem[];
 }
@@ -20,18 +20,18 @@ export interface DashboardLayoutProps extends BaseComponentProps {
 }
 
 // Table Types
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: string;
   title: string;
   dataIndex?: string;
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
   width?: string | number;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
   fixed?: 'left' | 'right';
 }
 
-export interface TableAction<T = any> {
+export interface TableAction<T = Record<string, unknown>> {
   key: string;
   label: string;
   icon?: React.ReactNode;
@@ -42,10 +42,10 @@ export interface TableAction<T = any> {
 
 // Form Types
 export interface FormProps extends BaseComponentProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Record<string, unknown>) => void;
   loading?: boolean;
-  initialValues?: Record<string, any>;
-  validationSchema?: any;
+  initialValues?: Record<string, unknown>;
+  validationSchema?: unknown;
 }
 
 export interface FormFieldProps extends BaseComponentProps {
@@ -79,7 +79,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 export interface LoadingState {
   loading: boolean;
   error?: string | null;
-  data?: any;
+  data?: unknown;
 }
 
 // Pagination Types
@@ -95,8 +95,8 @@ export interface PaginationProps {
 
 // Filter Types
 export interface FilterProps {
-  filters: Record<string, any>;
-  onFilterChange: (key: string, value: any) => void;
+  filters: Record<string, unknown>;
+  onFilterChange: (key: string, value: unknown) => void;
   onReset: () => void;
 }
 
@@ -121,10 +121,10 @@ export interface CardProps extends BaseComponentProps {
 export interface StatCardProps {
   title: string;
   value: string | number;
-  change?: {
+  icon: React.ElementType;
+  trend?: {
     value: number;
-    type: 'increase' | 'decrease';
+    isPositive: boolean;
   };
-  icon?: React.ReactNode;
-  color?: 'blue' | 'green' | 'red' | 'yellow' | 'purple';
+  loading?: boolean;
 } 

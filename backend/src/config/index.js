@@ -16,7 +16,7 @@ const config = {
 
   // Database Configuration
   database: {
-    uri: process.env.MONGODB_URI || 'mongodb+srv://devfatoorty:eKEiYVkgVatspAWu@cluster0.v5zpg6g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0cls',
+    uri: process.env.MONGODB_URI,
   },
 
   // JWT Configuration

@@ -4,20 +4,16 @@ import { Button, Toggle, Badge } from '../ui';
 import { MenuItem } from '../../types/api';
 import { apiService } from '../../lib/api';
 import { toast } from 'react-toastify';
-
+import Image from 'next/image';
 interface MenuItemCardProps {
   item: MenuItem;
   onEdit: (item: MenuItem) => void;
-  onDelete: (item: MenuItem) => void;
-  onToggleAvailability: (item: MenuItem) => void;
   onRefresh: () => void;
 }
 
 export default function MenuItemCard({
   item,
   onEdit,
-  onDelete,
-  onToggleAvailability,
   onRefresh
 }: MenuItemCardProps) {
   const [isToggling, setIsToggling] = useState(false);
@@ -82,10 +78,12 @@ export default function MenuItemCard({
       {/* Item Header */}
       <div className="relative">
         {item.image ? (
-          <img
+          <Image
             src={getImageUrl(item.image) || ''}
             alt={item.name}
             className="w-full h-40 object-cover"
+            width={128}
+            height={128}
           />
         ) : (
           <div className="w-full h-40 bg-gray-100 flex items-center justify-center">

@@ -31,7 +31,7 @@ export default function RestaurantProtectedRoute({ children }: RestaurantProtect
           // Try to make an authenticated request to verify token is still valid
           await apiService.getRestaurantStatus();
           setAuthorized(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Token validation failed:', error);
           
           // Token is invalid or expired
@@ -39,7 +39,7 @@ export default function RestaurantProtectedRoute({ children }: RestaurantProtect
           router.push('/restaurant/login');
           return;
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Access check failed:', error);
         
         // Handle network errors gracefully - allow access if token exists locally

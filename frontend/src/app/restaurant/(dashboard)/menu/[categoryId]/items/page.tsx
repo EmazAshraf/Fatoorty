@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   Plus, 
   Search, 
-  Filter, 
-  ArrowLeft,
   Package,
   Eye,
   DollarSign,
@@ -14,7 +12,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Button, Input, StatCard } from '../../../../../../components/ui';
-import { Breadcrumbs as HeroUIBreadcrumbs, BreadcrumbItem as HeroUIBreadcrumbItem } from "@heroui/react";
 import MenuItemCard from '../../../../../../components/menu/MenuItemCard';
 import MenuItemFormModal from '../../../../../../components/ui/Modal/MenuItemFormModal';
 import { MenuItem, MenuItemFormData, MenuCategory } from '../../../../../../types/api';
@@ -36,7 +33,7 @@ export default function MenuItemsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Load category and items
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -60,13 +57,13 @@ export default function MenuItemsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categoryId]);
 
   useEffect(() => {
     if (categoryId) {
       loadData();
     }
-  }, [categoryId]);
+  }, [categoryId, loadData]);
 
   // Filter items based on search and status
   const filteredItems = items.filter(item => {
@@ -103,44 +100,6 @@ export default function MenuItemsPage() {
   const handleEditItem = (item: MenuItem) => {
     setEditingItem(item);
     setShowItemModal(true);
-  };
-
-  const handleDeleteItem = async (item: MenuItem) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-
-    try {
-      await apiService.deleteMenuItem(item._id);
-      toast.success('Item deleted successfully');
-      loadData();
-    } catch (error) {
-      toast.error('Failed to delete item');
-      console.error('Error deleting item:', error);
-    }
-  };
-
-  const handleToggleAvailability = async (item: MenuItem) => {
-    try {
-      // Create a proper update object with only the fields that can be updated
-      const updateData: Partial<MenuItemFormData> = {
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        prepTime: item.prepTime,
-        ingredients: item.ingredients,
-        options: item.options,
-        displayOrder: item.displayOrder
-      };
-      
-      // Add isAvailable as a separate property (backend should handle this)
-      const updatePayload = { ...updateData, isAvailable: !item.isAvailable };
-      await apiService.updateMenuItem(item._id, updatePayload as MenuItemFormData);
-      
-      toast.success(`Item ${!item.isAvailable ? 'made available' : 'made unavailable'}`);
-      loadData();
-    } catch (error) {
-      toast.error('Failed to update item status');
-      console.error('Error updating item status:', error);
-    }
   };
 
   const handleItemSubmit = async (data: MenuItemFormData) => {
@@ -316,8 +275,6 @@ export default function MenuItemsPage() {
               key={item._id}
               item={item}
               onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              onToggleAvailability={handleToggleAvailability}
               onRefresh={loadData}
             />
           ))}

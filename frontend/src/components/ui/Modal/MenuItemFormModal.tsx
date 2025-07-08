@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import BaseModal, { BaseModalFooter } from './BaseModal';
 import { Button } from '../Button';
 import { Input } from '../Input';
-import { X, Plus, Minus, Upload, ImageIcon } from 'lucide-react';
+import { X, Plus, Minus, ImageIcon } from 'lucide-react';
 import { MenuItem, MenuItemFormData, MenuItemOption, MenuItemChoice } from '../../../types/api';
 import { apiService } from '../../../lib/api';
-
+import Image from 'next/image';
 interface MenuItemFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -212,7 +212,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     });
   };
 
-  const updateOption = (index: number, field: keyof MenuItemOption, value: any) => {
+  const updateOption = (index: number, field: keyof MenuItemOption, value: unknown) => {
     const newOptions = [...formData.options];
     newOptions[index] = { ...newOptions[index], [field]: value };
     setFormData({ ...formData, options: newOptions });
@@ -236,7 +236,7 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
     setFormData({ ...formData, options: newOptions });
   };
 
-  const updateChoice = (optionIndex: number, choiceIndex: number, field: keyof MenuItemChoice, value: any) => {
+  const updateChoice = (optionIndex: number, choiceIndex: number, field: keyof MenuItemChoice, value: unknown) => {
     const newOptions = [...formData.options];
     newOptions[optionIndex].choices[choiceIndex] = {
       ...newOptions[optionIndex].choices[choiceIndex],
@@ -339,10 +339,12 @@ const MenuItemFormModal: React.FC<MenuItemFormModalProps> = ({
             
             {imagePreview ? (
               <div className="relative">
-                <img
+                <Image
                   src={imagePreview}
                   alt="Item preview"
                   className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                  width={128}
+                  height={128}
                 />
                 <button
                   type="button"

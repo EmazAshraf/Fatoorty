@@ -12,9 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function SuperadminDashboard() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [topRestaurantsPeriod, setTopRestaurantsPeriod] = useState('restaurant');
+  const [loading, setLoading] = useState(true); 
   const [earningsPeriod, setEarningsPeriod] = useState('restaurant');
   const router = useRouter();
 
@@ -26,16 +24,11 @@ export default function SuperadminDashboard() {
       router.push('/superadmin/login');
       return;
     }
-
-    setUser({ name: 'Superadmin User' });
+    
     setLoading(false);
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userType');
-    router.push('/superadmin/login');
-  };
+  
 
   if (loading) {
     return <div className="flex items-center justify-center h-64">Loading...</div>;

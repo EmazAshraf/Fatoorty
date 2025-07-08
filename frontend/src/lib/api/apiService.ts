@@ -4,7 +4,6 @@ import type {
   StaffMember, 
   StaffFormData, 
   StaffStats,
-  RestaurantLoginResponse,
   EnhancedRestaurantLoginResponse,
   SuperadminLoginResponse,
   SuperadminProfile,
@@ -97,7 +96,7 @@ class ApiService {
     return data;
   }
 
-  async signupRestaurant(data: FormData | any) {
+  async signupRestaurant(data: FormData | Record<string, unknown>) {
     const isFormData = data instanceof FormData;
     
     const response = await fetch(`${API_BASE_URL}/restaurant/auth/signup`, {
@@ -165,7 +164,7 @@ class ApiService {
   }
 
   async updateStaff(id: string, data: Partial<StaffFormData>): Promise<ApiResponse<StaffMember>> {
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     
     if (data.name) updateData.name = data.name;
     if (data.email) updateData.email = data.email;
@@ -203,7 +202,7 @@ class ApiService {
   }
 
   // Verification APIs (Superadmin)
-  async getRestaurantVerifications(params: any = {}) {
+  async getRestaurantVerifications(params: Record<string, unknown> = {}) {
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -494,7 +493,7 @@ class ApiService {
   }
 
   // Restaurant Owner Profile APIs
-  async getRestaurantOwnerProfile(): Promise<{ owner: any }> {
+  async getRestaurantOwnerProfile(): Promise<{ owner: Record<string, unknown> }> {
     const response = await fetch(`${API_BASE_URL}/restaurant-owner/profile`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
@@ -508,7 +507,7 @@ class ApiService {
     return response.json();
   }
 
-  async updateRestaurantOwnerProfile(data: { name?: string; email?: string; phone?: string }): Promise<{ owner: any }> {
+  async updateRestaurantOwnerProfile(data: { name?: string; email?: string; phone?: string }): Promise<{ owner: Record<string, unknown> }> {
     const response = await fetch(`${API_BASE_URL}/restaurant-owner/profile`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
@@ -523,7 +522,7 @@ class ApiService {
     return response.json();
   }
 
-  async updateRestaurantOwnerProfilePhoto(file: File): Promise<{ owner: any; message: string; filename: string }> {
+  async updateRestaurantOwnerProfilePhoto(file: File): Promise<{ owner: Record<string, unknown>; message: string; filename: string }> {
     const formData = new FormData();
     formData.append('profilePhoto', file);
 

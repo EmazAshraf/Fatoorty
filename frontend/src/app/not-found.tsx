@@ -1,18 +1,13 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowLeft, Search, Sparkles, Zap, Star, Navigation, Globe, Layers } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function AnimatedNotFound() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
+ 
 
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-black relative overflow-hidden">
@@ -174,8 +169,8 @@ export default function AnimatedNotFound() {
                   Page Not Found
                 </h2>
                 <p className="text-gray-300 text-lg max-w-md mx-auto leading-relaxed">
-                  The digital realm you're seeking seems to have wandered off into the void. 
-                  Let's navigate back to familiar territory.
+                  The digital realm you are seeking seems to have wandered off into the void. 
+                  Let us navigate back to familiar territory.
                 </p>
               </motion.div>
 
