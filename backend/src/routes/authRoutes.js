@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Protected route - requires authentication
-router.get('auth/me', authenticate, getCurrentUser);
+router.get('/auth/me', authenticate, getCurrentUser);
 
 export default router;
 
