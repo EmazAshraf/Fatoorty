@@ -34,6 +34,7 @@ const corsOptions = {
 
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+'https://fatoorty-production.vercel.app',
     process.env.CORS_ORIGIN, // Add your production frontend URL here
   ].filter(Boolean), // Remove any undefined values
   credentials: true,
