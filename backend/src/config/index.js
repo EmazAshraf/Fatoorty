@@ -21,7 +21,7 @@ const config = {
 
   // JWT Configuration
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-secret-key',
+    secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
@@ -29,7 +29,7 @@ const config = {
   // File Upload Configuration
   upload: {
     maxFileSize: 5 * 1024 * 1024, // 5MB
-    allowedImageTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    allowedImageTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'],
     allowedDocumentTypes: ['application/pdf'],
     uploadPath: './uploads',
   },
@@ -40,11 +40,7 @@ const config = {
     credentials: true,
   },
 
-  // Rate Limiting
-  rateLimit: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-  },
+
 
   // Email Configuration (for future use)
   email: {

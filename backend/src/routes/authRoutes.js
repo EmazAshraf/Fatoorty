@@ -1,8 +1,18 @@
 import express from 'express';
-import { login } from '../controllers/authController.js';
+import { authenticate } from '../middleware/auth/index.js';
+import { getCurrentUser } from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.post('/login', login);
+/**
+ * General Authentication Routes
+ * Handles shared authentication operations
+ */
 
-export default router; 
+// Protected route - requires authentication
+router.get('/me', authenticate, getCurrentUser);
+
+export default router;
+
+
+

@@ -2,13 +2,24 @@ import { asyncHandler } from '../middleware/error/errorHandler.js';
 import { createSuccessResponse, createErrorResponse } from '../utils/responseHandler.js';
 import Staff from '../../models/Staff.js';
 import Restaurant from '../../models/Restaurant.js';
+import fileUploadService from '../services/fileUploadService.js';
 
 /**
- * Get all staff for a restaurant with pagination
+ * Get all staff for a restaurant with pagination and filtering
  * GET /api/restaurant/staff
  */
 export const getAllStaffController = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, search = '', sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+  const { 
+    page = 1, 
+    limit = 10, 
+    search = '', 
+    position = '', 
+    status = '', 
+    startDate = '', 
+    endDate = '',
+    sortBy = 'createdAt', 
+    sortOrder = 'desc' 
+  } = req.query;
   
   // Get restaurant ID from authenticated user
   const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
@@ -22,6 +33,7 @@ export const getAllStaffController = asyncHandler(async (req, res) => {
     isDeleted: false
   };
 
+  // Add search filter
   if (search) {
     searchQuery.$or = [
       { name: { $regex: search, $options: 'i' } },
@@ -29,6 +41,27 @@ export const getAllStaffController = asyncHandler(async (req, res) => {
       { phone: { $regex: search, $options: 'i' } },
       { position: { $regex: search, $options: 'i' } }
     ];
+  }
+
+  // Add position filter
+  if (position && position !== 'all') {
+    searchQuery.position = position;
+  }
+
+  // Add status filter
+  if (status && status !== 'all') {
+    searchQuery.status = status;
+  }
+
+  // Add date range filter
+  if (startDate || endDate) {
+    searchQuery.joiningDate = {};
+    if (startDate) {
+      searchQuery.joiningDate.$gte = new Date(startDate);
+    }
+    if (endDate) {
+      searchQuery.joiningDate.$lte = new Date(endDate + 'T23:59:59.999Z');
+    }
   }
 
   // Calculate pagination
@@ -41,7 +74,7 @@ export const getAllStaffController = asyncHandler(async (req, res) => {
   sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
   try {
-    // Get staff with pagination
+    // Get staff with pagination and filtering
     const [staff, totalCount] = await Promise.all([
       Staff.find(searchQuery)
         .sort(sort)
@@ -78,7 +111,7 @@ export const getAllStaffController = asyncHandler(async (req, res) => {
  * POST /api/restaurant/staff
  */
 export const addStaffController = asyncHandler(async (req, res) => {
-  const { name, email, phone, position, salary, joiningDate, status = 'active' } = req.body;
+  const { name, email, phone, position, joiningDate, status = 'active' } = req.body;
 
   // Get restaurant ID from authenticated user
   const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
@@ -87,7 +120,7 @@ export const addStaffController = asyncHandler(async (req, res) => {
   }
 
   // Validate required fields
-  if (!name || !email || !phone || !position || !salary || !joiningDate) {
+  if (!name || !email || !phone || !position || !joiningDate) {
     return res.status(400).json(createErrorResponse('All required fields must be provided', 400));
   }
 
@@ -103,6 +136,48 @@ export const addStaffController = asyncHandler(async (req, res) => {
   }
 
   try {
+    // Handle file uploads if present
+    let profilePhotoUrl = null;
+    let governmentIdUrl = null;
+
+    if (req.files) {
+      console.log('📁 Files received for creation:', Object.keys(req.files));
+      console.log('📁 Files details:', {
+        profilePhoto: req.files.profilePhoto ? `${req.files.profilePhoto.length} file(s)` : 'none',
+        governmentId: req.files.governmentId ? `${req.files.governmentId.length} file(s)` : 'none'
+      });
+      
+      if (req.files.profilePhoto && req.files.profilePhoto[0]) {
+        console.log('🖼️ Uploading profile photo for staff creation...');
+        console.log('Photo details:', {
+          name: req.files.profilePhoto[0].originalname,
+          size: req.files.profilePhoto[0].size,
+          type: req.files.profilePhoto[0].mimetype
+        });
+        const photoResult = await fileUploadService.uploadStaffProfile(
+          req.files.profilePhoto[0]
+        );
+        profilePhotoUrl = photoResult.url;
+        console.log('✅ Profile photo uploaded successfully:', profilePhotoUrl);
+      }
+
+      if (req.files.governmentId && req.files.governmentId[0]) {
+        console.log('📄 Uploading government ID for staff creation...');
+        console.log('Document details:', {
+          name: req.files.governmentId[0].originalname,
+          size: req.files.governmentId[0].size,
+          type: req.files.governmentId[0].mimetype
+        });
+        const govIdResult = await fileUploadService.uploadStaffDocument(
+          req.files.governmentId[0]
+        );
+        governmentIdUrl = govIdResult.url;
+        console.log('✅ Government ID uploaded successfully:', governmentIdUrl);
+      }
+    } else {
+      console.log('📁 No files received in request');
+    }
+
     // Create new staff member
     const staffData = {
       restaurantId: restaurant._id,
@@ -110,23 +185,43 @@ export const addStaffController = asyncHandler(async (req, res) => {
       email: email.toLowerCase().trim(),
       phone: phone.trim(),
       position: position.toLowerCase(),
-      salary: Number(salary),
       joiningDate: new Date(joiningDate),
       status,
-      image: null // Always null for now, will add Cloudinary later
+      profilePhoto: profilePhotoUrl,
+      governmentIdUrl: governmentIdUrl
     };
 
+    console.log('Creating staff with data:', staffData);
     const newStaff = new Staff(staffData);
     await newStaff.save();
+    console.log('Staff created successfully:', newStaff._id);
 
     res.status(201).json(createSuccessResponse(
       'Staff member added successfully',
       newStaff
     ));
   } catch (error) {
-    console.error('Error adding staff:', error);
-    res.status(500).json(createErrorResponse('Failed to add staff member', 500))
-    ;
+    console.error('❌ Error adding staff:', error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to add staff member';
+    let statusCode = 500;
+    
+    if (error.message.includes('validation')) {
+      errorMessage = 'Validation error: ' + error.message;
+      statusCode = 400;
+    } else if (error.message.includes('upload') || error.message.includes('S3')) {
+      errorMessage = 'File upload failed: ' + error.message;
+      statusCode = 500;
+    } else if (error.message.includes('duplicate') || error.message.includes('exists')) {
+      errorMessage = 'Staff member with this email already exists';
+      statusCode = 400;
+    }
+    
+    res.status(statusCode).json(createErrorResponse(errorMessage, statusCode));
   }
 });
 
@@ -136,7 +231,7 @@ export const addStaffController = asyncHandler(async (req, res) => {
  */
 export const updateStaffController = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, position, salary, joiningDate, status } = req.body;
+  const { name, email, phone, position, joiningDate, status } = req.body;
 
   // Get restaurant ID from authenticated user
   const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
@@ -170,16 +265,90 @@ export const updateStaffController = asyncHandler(async (req, res) => {
       }
     }
 
+    // Handle file uploads if present
+    let profilePhotoUrl = staff.profilePhoto;
+    let governmentIdUrl = staff.governmentIdUrl;
+
+    if (req.files) {
+      console.log('📁 Files received for update:', Object.keys(req.files));
+      console.log('📁 Files details:', {
+        profilePhoto: req.files.profilePhoto ? `${req.files.profilePhoto.length} file(s)` : 'none',
+        governmentId: req.files.governmentId ? `${req.files.governmentId.length} file(s)` : 'none'
+      });
+
+      if (req.files.profilePhoto && req.files.profilePhoto[0]) {
+        console.log('🖼️ Uploading profile photo for staff update...');
+        console.log('Photo details:', {
+          name: req.files.profilePhoto[0].originalname,
+          size: req.files.profilePhoto[0].size,
+          type: req.files.profilePhoto[0].mimetype
+        });
+        
+        // 🔄 FILE REPLACEMENT PROCESS: Delete old file → Upload new file → Update database
+        // Delete old profile photo if it exists
+        if (staff.profilePhoto) {
+          console.log('🗑️ Deleting old profile photo:', staff.profilePhoto);
+          try {
+            await fileUploadService.deleteFile(staff.profilePhoto);
+            console.log('✅ Old profile photo deleted successfully');
+          } catch (deleteError) {
+            console.warn('⚠️ Warning: Failed to delete old profile photo:', deleteError.message);
+            console.warn('⚠️ Old file URL:', staff.profilePhoto);
+            console.warn('⚠️ Deletion error details:', deleteError);
+            // Don't fail the update if deletion fails - continue with new file upload
+          }
+        }
+        
+        const photoResult = await fileUploadService.uploadStaffProfile(
+          req.files.profilePhoto[0]
+        );
+        profilePhotoUrl = photoResult.url;
+        console.log('✅ Profile photo uploaded successfully:', profilePhotoUrl);
+      }
+
+      if (req.files.governmentId && req.files.governmentId[0]) {
+        console.log('📄 Uploading government ID for staff update...');
+        console.log('Document details:', {
+          name: req.files.governmentId[0].originalname,
+          size: req.files.governmentId[0].size,
+          type: req.files.governmentId[0].mimetype
+        });
+        
+        // 🔄 FILE REPLACEMENT PROCESS: Delete old file → Upload new file → Update database
+        // Delete old government ID if it exists
+        if (staff.governmentIdUrl) {
+          console.log('🗑️ Deleting old government ID:', staff.governmentIdUrl);
+          try {
+            await fileUploadService.deleteFile(staff.governmentIdUrl);
+            console.log('✅ Old government ID deleted successfully');
+          } catch (deleteError) {
+            console.warn('⚠️ Warning: Failed to delete old government ID:', deleteError.message);
+            console.warn('⚠️ Old file URL:', staff.governmentIdUrl);
+            console.warn('⚠️ Deletion error details:', deleteError);
+            // Don't fail the update if deletion fails - continue with new file upload
+          }
+        }
+        
+        const govIdResult = await fileUploadService.uploadStaffDocument(
+          req.files.governmentId[0]
+        );
+        governmentIdUrl = govIdResult.url;
+        console.log('✅ Government ID uploaded successfully:', governmentIdUrl);
+      }
+    } else {
+      console.log('📁 No files received in request');
+    }
+
     // Update fields
     const updateData = {};
     if (name) updateData.name = name.trim();
     if (email) updateData.email = email.toLowerCase().trim();
     if (phone) updateData.phone = phone.trim();
     if (position) updateData.position = position;
-    if (salary) updateData.salary = Number(salary);
     if (joiningDate) updateData.joiningDate = new Date(joiningDate);
     if (status) updateData.status = status;
-    // Image will be handled later with Cloudinary integration
+    if (profilePhotoUrl !== staff.profilePhoto) updateData.profilePhoto = profilePhotoUrl;
+    if (governmentIdUrl !== staff.governmentIdUrl) updateData.governmentIdUrl = governmentIdUrl;
 
     const updatedStaff = await Staff.findByIdAndUpdate(
       id,
@@ -192,8 +361,27 @@ export const updateStaffController = asyncHandler(async (req, res) => {
       updatedStaff
     ));
   } catch (error) {
-    console.error('Error updating staff:', error);
-    res.status(500).json(createErrorResponse('Failed to update staff member', 500));
+    console.error('❌ Error updating staff:', error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to update staff member';
+    let statusCode = 500;
+    
+    if (error.message.includes('validation')) {
+      errorMessage = 'Validation error: ' + error.message;
+      statusCode = 400;
+    } else if (error.message.includes('upload') || error.message.includes('S3')) {
+      errorMessage = 'File upload failed: ' + error.message;
+      statusCode = 500;
+    } else if (error.message.includes('not found')) {
+      errorMessage = 'Staff member not found';
+      statusCode = 404;
+    }
+    
+    res.status(statusCode).json(createErrorResponse(errorMessage, statusCode));
   }
 });
 
@@ -266,7 +454,6 @@ export const getStaffStatsController = asyncHandler(async (req, res) => {
           inactiveStaff: { 
             $sum: { $cond: [{ $eq: ['$status', 'inactive'] }, 1, 0] } 
           },
-          totalSalaryExpense: { $sum: '$salary' },
           positions: { $push: '$position' }
         }
       }
@@ -284,7 +471,6 @@ export const getStaffStatsController = asyncHandler(async (req, res) => {
       totalStaff: stats?.totalStaff || 0,
       activeStaff: stats?.activeStaff || 0,
       inactiveStaff: stats?.inactiveStaff || 0,
-      totalSalaryExpense: stats?.totalSalaryExpense || 0,
       positionDistribution: Object.entries(positionDistribution).map(([position, count]) => ({
         position,
         count

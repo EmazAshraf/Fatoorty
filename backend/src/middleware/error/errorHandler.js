@@ -1,4 +1,5 @@
 import config from '../../config/index.js';
+import { logSecurityEvent, SECURITY_EVENTS } from '../securityLogger.js';
 
 /**
  * Custom Error Classes
@@ -45,22 +46,31 @@ export class ConflictError extends AppError {
 }
 
 /**
- * Global Error Handler Middleware
+ * Global Error Handler Middleware with Security Logging
  */
 export const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log error
-  console.error('❌ Error:', {
+  // Enhanced error logging
+  const errorContext = {
     message: err.message,
-    stack: err.stack,
+    stack: config.server.nodeEnv === 'development' ? err.stack : undefined,
     url: req.url,
     method: req.method,
-    ip: req.ip,
+    ip: req.ip || req.connection.remoteAddress,
     userAgent: req.get('User-Agent'),
+    userId: req.user?.id || 'Anonymous',
+    userType: req.userType || 'Unknown',
     timestamp: new Date().toISOString(),
-  });
+    headers: {
+      origin: req.headers.origin,
+      referer: req.headers.referer,
+      'content-type': req.headers['content-type']
+    }
+  };
+
+  console.error('❌ Error:', errorContext);
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
@@ -85,11 +95,47 @@ export const errorHandler = (err, req, res, next) => {
   if (err.name === 'JsonWebTokenError') {
     const message = 'Invalid token';
     error = new AuthenticationError(message);
+    
+    // Log security event
+    logSecurityEvent(SECURITY_EVENTS.INVALID_TOKEN, req, {
+      details: { 
+        error: 'JsonWebTokenError',
+        originalMessage: err.message
+      }
+    }, 'warn');
   }
 
   if (err.name === 'TokenExpiredError') {
     const message = 'Token expired';
     error = new AuthenticationError(message);
+    
+    // Log security event
+    logSecurityEvent(SECURITY_EVENTS.INVALID_TOKEN, req, {
+      details: { 
+        error: 'TokenExpiredError',
+        originalMessage: err.message
+      }
+    }, 'warn');
+  }
+
+  // Authentication errors
+  if (error instanceof AuthenticationError) {
+    logSecurityEvent(SECURITY_EVENTS.AUTHORIZATION_FAILURE, req, {
+      details: { 
+        error: 'AuthenticationError',
+        message: error.message
+      }
+    }, 'warn');
+  }
+
+  // Authorization errors
+  if (error instanceof AuthorizationError) {
+    logSecurityEvent(SECURITY_EVENTS.AUTHORIZATION_FAILURE, req, {
+      details: { 
+        error: 'AuthorizationError',
+        message: error.message
+      }
+    }, 'warn');
   }
 
   // Multer errors
@@ -120,11 +166,28 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Production error response
+  // Production error response - sanitized for security
+  let responseMessage = 'Internal Server Error';
+  
+  if (error.isOperational) {
+    responseMessage = message;
+  } else if (statusCode >= 400 && statusCode < 500) {
+    // Client errors - safe to expose
+    responseMessage = message;
+  }
+  
+  // Additional security: Don't expose sensitive paths or internal info
+  if (responseMessage.includes('ENOENT') || 
+      responseMessage.includes('path') || 
+      responseMessage.includes('directory') ||
+      responseMessage.includes('file system')) {
+    responseMessage = 'Resource not found';
+  }
+  
   return res.status(statusCode).json({
     success: false,
     error: {
-      message: error.isOperational ? message : 'Internal Server Error',
+      message: responseMessage,
       statusCode,
     },
   });

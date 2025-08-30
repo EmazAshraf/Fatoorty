@@ -4,25 +4,22 @@ import dotenv from 'dotenv';
 import config from './src/config/index.js';
 import databaseConfig from './src/config/database.js';
 import { errorHandler, notFoundHandler } from './src/middleware/error/errorHandler.js';
+import { cookieParserMiddleware } from './src/middleware/cookie/index.js';
+import { securityLogger } from './src/middleware/securityLogger.js';
 
 // Import routes from new structure
-import authRoutes from './src/routes/authRoutes.js';
-import superadminAuthRoutes from './src/routes/superadminAuthRoutes.js';
-import restaurantAuthRoutes from './src/routes/restaurantAuthRoutes.js';
-import restaurantStatusRoutes from './src/routes/restaurantStatusRoutes.js';
-import superadminRoutes from './src/routes/superadminRoutes.js';
 import restaurantRoutes from './src/routes/restaurantRoutes.js';
-import restaurantOwnerRoutes from './src/routes/restaurantOwnerRoutes.js';
-import superadminDashboardRoutes from './src/routes/superadminDashboardRoutes.js';
-import verificationRoutes from './src/routes/verificationRoutes.js';
+import superadminRoutes from './src/routes/superadminRoutes.js';
 import fileRoutes from './src/routes/fileRoutes.js';
 import staffRoutes from './src/routes/staffRoutes.js';
 import menuRoutes from './src/routes/menuRoutes.js';
+import tableRoutes from './src/routes/tableRoutes.js';
+import publicRoutes from './src/routes/publicRoutes.js';
+import authRoutes from './src/routes/authRoutes.js';
 
 // Load environment variables
 dotenv.config();
-console.log('process.env.MONGODB_URI', process.env.MONGODB_URI);
-console.log('process.env.JWT_SECRET', process.env.JWT_SECRET);
+
 
 // Connect to database
 databaseConfig.connect();
@@ -33,6 +30,8 @@ const app = express();
 // CORS configuration
 const corsOptions = {
   origin: [
+    'http://localhost:3001',
+
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     process.env.CORS_ORIGIN, // Add your production frontend URL here
@@ -46,23 +45,23 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParserMiddleware);
+
+// Security logging middleware (should be early in the middleware chain)
+app.use(securityLogger);
 
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/restaurant/auth', restaurantAuthRoutes);
-app.use('/api/restaurant-owner', restaurantOwnerRoutes);
 app.use('/api/restaurant', restaurantRoutes);
-app.use('/api/restaurant', restaurantStatusRoutes);
 app.use('/api/restaurant/staff', staffRoutes);
 app.use('/api/restaurant/menu', menuRoutes);
-app.use('/api/superadmin/auth', superadminAuthRoutes);
-app.use('/api/superadmin/dashboard', superadminDashboardRoutes);
+app.use('/api/restaurant/tables', tableRoutes);
 app.use('/api/superadmin', superadminRoutes);
-app.use('/api/superadmin/verification', verificationRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/auth', authRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
@@ -76,7 +75,7 @@ app.use(errorHandler);
 // Start server
 const PORT = config.server.port;
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port:${PORT}`);
 });
 
 // Handle unhandled promise rejections
@@ -85,4 +84,4 @@ process.on('unhandledRejection', (err) => {
   server.close(() => process.exit(1));
 });
 
-export default app; 
+export default app;

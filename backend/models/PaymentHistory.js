@@ -14,13 +14,11 @@ const paymentHistorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Restaurant',
       required: true,
-      index: true,
     },
     subscriptionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Subscription',
       required: true,
-      index: true,
     },
     
     // TapPay payment information
@@ -28,7 +26,6 @@ const paymentHistorySchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     tapPayTransactionId: {
       type: String,
@@ -46,7 +43,7 @@ const paymentHistorySchema = new mongoose.Schema(
     currency: {
       type: String,
       required: true,
-      default: 'SAR',
+      default: 'EGP',
     },
     
     // Payment status tracking

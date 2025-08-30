@@ -32,27 +32,11 @@ const ensureUploadDir = (dir) => {
 ensureUploadDir('./uploads/menu/categories');
 ensureUploadDir('./uploads/menu/items');
 
-// Multer configuration for category images
-const categoryStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads/menu/categories');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `category-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
+// Multer configuration for category images (memory storage for S3 upload)
+const categoryStorage = multer.memoryStorage();
 
-// Multer configuration for item images
-const itemStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads/menu/items');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `item-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
+// Multer configuration for item images (memory storage for S3 upload)
+const itemStorage = multer.memoryStorage();
 
 // File filter for images
 const fileFilter = (req, file, cb) => {
@@ -86,6 +70,13 @@ const uploadItemImage = multer({
 
 // Apply authentication middleware to all routes
 router.use(authenticate, requireRestaurantOwner);
+
+/**
+ * Root Menu Route
+ */
+
+// GET /api/restaurant/menu - Get full menu (alias for /full)
+router.get('/', getFullMenu);
 
 /**
  * Menu Category Routes

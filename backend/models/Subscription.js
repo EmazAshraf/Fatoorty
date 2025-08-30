@@ -14,7 +14,6 @@ const subscriptionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Restaurant',
       required: true,
-      index: true,
     },
     
     // Plan information matching frontend plans
@@ -43,7 +42,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: 'SAR', // Saudi Riyal
+      default: 'EGP', // Saudi Riyal
     },
     
     // Billing dates

@@ -11,8 +11,6 @@ class DatabaseConfig {
   constructor() {
     this.uri = process.env.MONGODB_URI || 'mongodb+srv://devfatoorty:eKEiYVkgVatspAWu@cluster0.v5zpg6g.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0cls';
     this.options = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
@@ -25,10 +23,10 @@ class DatabaseConfig {
    */
   async connect() {
     try {
-      console.log('🔄 Connecting to MongoDB...');
+        console.log('🔄 Connecting to MongoDB...');
       const conn = await mongoose.connect(this.uri, this.options);
       
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      console.log(`✅ MongoDB Connected`);
       
       // Handle connection events
       mongoose.connection.on('error', (err) => {

@@ -8,9 +8,14 @@ const tableSchema = new mongoose.Schema(
       required: true,
     },
     tableNumber: {
-      type: String, // Supports "A1", "VIP1", "24", etc.
+      type: Number, // Store as number: 1, 2, 3, 4, 5, 6, 7, 8... up to 200
       required: true,
-      trim: true,
+      min: 1, // Table numbers start from 1
+      max: 200, // Table numbers cannot exceed 200
+      validate: {
+        validator: Number.isInteger,
+        message: 'Table number must be a whole number'
+      }
     },
     waiterId: {
       type: mongoose.Schema.Types.ObjectId,

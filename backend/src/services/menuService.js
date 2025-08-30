@@ -8,8 +8,7 @@ import mongoose from 'mongoose';
 // Get all categories for a restaurant
 export const getMenuCategories = async (restaurantId) => {
   return await MenuCategory.find({ 
-    restaurantId, 
-    isDeleted: false 
+    restaurantId
   }).sort({ displayOrder: 1, createdAt: 1 });
 };
 
@@ -17,8 +16,7 @@ export const getMenuCategories = async (restaurantId) => {
 export const getCategoryById = async (categoryId, restaurantId) => {
   return await MenuCategory.findOne({ 
     _id: categoryId, 
-    restaurantId,
-    isDeleted: false 
+    restaurantId
   });
 };
 
@@ -29,8 +27,7 @@ export const createCategory = async (restaurantId, categoryData) => {
   // Check if category name already exists for this restaurant
   const existingCategory = await MenuCategory.findOne({
     restaurantId,
-    name: { $regex: new RegExp(`^${name}$`, 'i') },
-    isDeleted: false
+    name: { $regex: new RegExp(`^${name}$`, 'i') }
   });
   
   if (existingCategory) {
@@ -57,8 +54,7 @@ export const updateCategory = async (categoryId, restaurantId, updateData) => {
     const existingCategory = await MenuCategory.findOne({
       restaurantId,
       name: { $regex: new RegExp(`^${name}$`, 'i') },
-      _id: { $ne: categoryId },
-      isDeleted: false
+      _id: { $ne: categoryId }
     });
     
     if (existingCategory) {
@@ -67,7 +63,7 @@ export const updateCategory = async (categoryId, restaurantId, updateData) => {
   }
   
   const category = await MenuCategory.findOneAndUpdate(
-    { _id: categoryId, restaurantId, isDeleted: false },
+    { _id: categoryId, restaurantId },
     { 
       ...(name && { name }),
       ...(description !== undefined && { description }),
@@ -89,8 +85,7 @@ export const updateCategory = async (categoryId, restaurantId, updateData) => {
 export const toggleCategoryStatus = async (categoryId, restaurantId) => {
   const category = await MenuCategory.findOne({ 
     _id: categoryId, 
-    restaurantId,
-    isDeleted: false 
+    restaurantId
   });
   
   if (!category) {
@@ -101,7 +96,7 @@ export const toggleCategoryStatus = async (categoryId, restaurantId) => {
   return await category.save();
 };
 
-// Delete category (soft delete)
+// Delete category (hard delete)
 export const deleteCategory = async (categoryId, restaurantId) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -110,28 +105,27 @@ export const deleteCategory = async (categoryId, restaurantId) => {
     // Check if category exists
     const category = await MenuCategory.findOne({ 
       _id: categoryId, 
-      restaurantId,
-      isDeleted: false 
+      restaurantId
     }).session(session);
     
     if (!category) {
       throw new Error('Category not found');
     }
     
-    // Soft delete all items in this category
-    await MenuItem.updateMany(
-      { categoryId, isDeleted: false },
-      { isDeleted: true, isAvailable: false },
+    // Hard delete all items in this category
+    await MenuItem.deleteMany(
+      { categoryId },
       { session }
     );
     
-    // Soft delete the category
-    category.isDeleted = true;
-    category.isActive = false;
-    await category.save({ session });
+    // Hard delete the category
+    await MenuCategory.deleteOne(
+      { _id: categoryId, restaurantId },
+      { session }
+    );
     
     await session.commitTransaction();
-    return category;
+    return { message: 'Category and all its items deleted successfully' };
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -149,8 +143,7 @@ export const getMenuItems = async (categoryId, restaurantId) => {
   // Verify category belongs to restaurant
   const category = await MenuCategory.findOne({ 
     _id: categoryId, 
-    restaurantId,
-    isDeleted: false 
+    restaurantId
   });
   
   if (!category) {
@@ -158,19 +151,17 @@ export const getMenuItems = async (categoryId, restaurantId) => {
   }
   
   return await MenuItem.find({ 
-    categoryId, 
-    isDeleted: false 
+    categoryId
   }).sort({ displayOrder: 1, createdAt: 1 });
 };
 
 // Get item by ID
 export const getItemById = async (itemId, restaurantId) => {
   return await MenuItem.findOne({ 
-    _id: itemId, 
-    isDeleted: false 
+    _id: itemId
   }).populate({
     path: 'categoryId',
-    match: { restaurantId, isDeleted: false }
+    match: { restaurantId }
   });
 };
 
@@ -179,8 +170,7 @@ export const createMenuItem = async (categoryId, restaurantId, itemData) => {
   // Verify category belongs to restaurant
   const category = await MenuCategory.findOne({ 
     _id: categoryId, 
-    restaurantId,
-    isDeleted: false 
+    restaurantId
   });
   
   if (!category) {
@@ -191,10 +181,12 @@ export const createMenuItem = async (categoryId, restaurantId, itemData) => {
     name,
     description,
     image,
-    price,
-    prepTime,
     ingredients,
-    options,
+    basePrice,
+    hasOptions,
+    optionGroups,
+    addOns,
+    prepTime,
     displayOrder
   } = itemData;
   
@@ -203,10 +195,12 @@ export const createMenuItem = async (categoryId, restaurantId, itemData) => {
     name,
     description,
     image,
-    price,
+    ingredients,
+    basePrice,
+    hasOptions,
+    optionGroups,
+    addOns,
     prepTime,
-    ingredients: ingredients || [],
-    options: options || [],
     displayOrder: displayOrder || 0,
   });
   
@@ -225,11 +219,10 @@ export const createMenuItem = async (categoryId, restaurantId, itemData) => {
 export const updateMenuItem = async (itemId, restaurantId, updateData) => {
   // Verify item belongs to restaurant
   const item = await MenuItem.findOne({ 
-    _id: itemId, 
-    isDeleted: false 
+    _id: itemId
   }).populate({
     path: 'categoryId',
-    match: { restaurantId, isDeleted: false }
+    match: { restaurantId }
   });
   
   if (!item || !item.categoryId) {
@@ -240,10 +233,12 @@ export const updateMenuItem = async (itemId, restaurantId, updateData) => {
     name,
     description,
     image,
-    price,
-    prepTime,
     ingredients,
-    options,
+    basePrice,
+    hasOptions,
+    optionGroups,
+    addOns,
+    prepTime,
     displayOrder,
     isAvailable
   } = updateData;
@@ -254,10 +249,12 @@ export const updateMenuItem = async (itemId, restaurantId, updateData) => {
       ...(name && { name }),
       ...(description !== undefined && { description }),
       ...(image !== undefined && { image }),
-      ...(price !== undefined && { price }),
-      ...(prepTime !== undefined && { prepTime }),
       ...(ingredients !== undefined && { ingredients }),
-      ...(options !== undefined && { options }),
+      ...(basePrice !== undefined && { basePrice }),
+      ...(hasOptions !== undefined && { hasOptions }),
+      ...(optionGroups !== undefined && { optionGroups }),
+      ...(addOns !== undefined && { addOns }),
+      ...(prepTime !== undefined && { prepTime }),
       ...(displayOrder !== undefined && { displayOrder }),
       ...(isAvailable !== undefined && { isAvailable }),
     },
@@ -270,11 +267,10 @@ export const updateMenuItem = async (itemId, restaurantId, updateData) => {
 // Toggle item availability
 export const toggleItemAvailability = async (itemId, restaurantId) => {
   const item = await MenuItem.findOne({ 
-    _id: itemId, 
-    isDeleted: false 
+    _id: itemId
   }).populate({
     path: 'categoryId',
-    match: { restaurantId, isDeleted: false }
+    match: { restaurantId }
   });
   
   if (!item || !item.categoryId) {
@@ -285,23 +281,21 @@ export const toggleItemAvailability = async (itemId, restaurantId) => {
   return await item.save();
 };
 
-// Delete menu item (soft delete)
+// Delete menu item (hard delete)
 export const deleteMenuItem = async (itemId, restaurantId) => {
   const item = await MenuItem.findOne({ 
-    _id: itemId, 
-    isDeleted: false 
+    _id: itemId
   }).populate({
     path: 'categoryId',
-    match: { restaurantId, isDeleted: false }
+    match: { restaurantId }
   });
   
   if (!item || !item.categoryId) {
     throw new Error('Menu item not found');
   }
   
-  item.isDeleted = true;
-  item.isAvailable = false;
-  const deletedItem = await item.save();
+  // Hard delete the item
+  await MenuItem.deleteOne({ _id: itemId });
   
   // Update category item count
   await MenuCategory.findByIdAndUpdate(
@@ -309,7 +303,7 @@ export const deleteMenuItem = async (itemId, restaurantId) => {
     { $inc: { itemCount: -1 } }
   );
   
-  return deletedItem;
+  return { message: 'Menu item deleted successfully' };
 };
 
 // Get full menu with categories and items
@@ -317,8 +311,7 @@ export const getFullMenu = async (restaurantId) => {
   return await MenuCategory.aggregate([
     { 
       $match: { 
-        restaurantId: new mongoose.Types.ObjectId(restaurantId),
-        isDeleted: false 
+        restaurantId: new mongoose.Types.ObjectId(restaurantId)
       } 
     },
     { $sort: { displayOrder: 1, createdAt: 1 } },
@@ -329,7 +322,6 @@ export const getFullMenu = async (restaurantId) => {
         foreignField: 'categoryId',
         as: 'items',
         pipeline: [
-          { $match: { isDeleted: false } },
           { $sort: { displayOrder: 1, createdAt: 1 } }
         ]
       }

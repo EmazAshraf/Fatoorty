@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate, requireRestaurantOwner } from '../middleware/auth/index.js';
+import { uploadStaffFiles } from '../middleware/upload/index.js';
 import { 
   getAllStaffController, 
   addStaffController, 
@@ -14,8 +15,8 @@ router.use(authenticate, requireRestaurantOwner);
 
 router.get('/stats', getStaffStatsController);
 router.get('/', getAllStaffController);
-router.post('/', addStaffController);
-router.put('/:id', updateStaffController);
+router.post('/', uploadStaffFiles, addStaffController);
+router.put('/:id', uploadStaffFiles, updateStaffController);
 router.delete('/:id', deleteStaffController);
 
 export default router; 

@@ -6,7 +6,6 @@ const menuCategorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Restaurant',
       required: true,
-      index: true,
     },
     name: {
       type: String,
@@ -33,10 +32,6 @@ const menuCategorySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
     // Performance tracking
     itemCount: {
       type: Number,
@@ -50,12 +45,12 @@ const menuCategorySchema = new mongoose.Schema(
 
 // Compound indexes for performance
 menuCategorySchema.index({ restaurantId: 1, displayOrder: 1 });
-menuCategorySchema.index({ restaurantId: 1, isActive: 1, isDeleted: 1 });
+menuCategorySchema.index({ restaurantId: 1, isActive: 1 });
 
 // Ensure unique category names per restaurant
 menuCategorySchema.index(
   { restaurantId: 1, name: 1 }, 
-  { unique: true, partialFilterExpression: { isDeleted: false } }
+  { unique: true }
 );
 
 // Virtual for checking if category has items
@@ -65,9 +60,6 @@ menuCategorySchema.virtual('hasItems').get(function() {
 
 // Pre-save middleware to update itemCount
 menuCategorySchema.pre('save', function(next) {
-  if (this.isModified('isDeleted') && this.isDeleted) {
-    this.isActive = false;
-  }
   next();
 });
 

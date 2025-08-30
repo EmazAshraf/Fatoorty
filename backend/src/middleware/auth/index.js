@@ -6,52 +6,74 @@ import Superadmin from '../../../models/Superadmin.js';
 import RestaurantOwner from '../../../models/RestaurantOwner.js';
 
 /**
- * Unified Authentication Middleware
- * Handles authentication for all user types
+ * Extract token from request (cookie or header)
+ */
+const extractToken = (req) => {
+
+  // First try to get token from cookie
+  const tokenFromCookie = req.cookies?.accessToken;
+  if (tokenFromCookie) {
+    return tokenFromCookie;
+  }
+  
+  // Fallback to Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  
+  return null;
+};
+
+/**
+ * Unified Authentication Middleware (Pure JWT)
+ * Handles authentication for restaurant owners and superadmins
  */
 export const authenticate = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AuthenticationError('No token provided');
-    }
-
-    const token = authHeader.substring(7);
+    const token = extractToken(req);
     
     if (!token) {
       throw new AuthenticationError('No token provided');
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, config.jwt.secret);
+    // Verify token using the improved verifyToken function
+    const decoded = jwt.verify(token, config.jwt.secret, {
+      issuer: 'fatoorty-api',
+      audience: 'fatoorty-client'
+    });
     
     if (!decoded) {
       throw new AuthenticationError('Invalid token');
     }
 
-    // Find user based on token payload
+    // Validate token structure
+    if (!decoded.role || !['superadmin', 'restaurantOwner'].includes(decoded.role)) {
+      throw new AuthenticationError('Invalid token role');
+    }
+
+    if (!decoded.id || !decoded.tokenId) {
+      throw new AuthenticationError('Invalid token structure');
+    }
+
+    // Optional: Verify user still exists (lightweight check)
+    // Only for critical operations - for performance, we trust the JWT
     let user = null;
     
     if (decoded.role === 'superadmin') {
-      user = await Superadmin.findById(decoded.id);
+      user = await Superadmin.findById(decoded.id).select('_id email name');
     } else if (decoded.role === 'restaurantOwner') {
-      user = await RestaurantOwner.findById(decoded.id);
-    } else {
-      user = await User.findById(decoded.id);
+      user = await RestaurantOwner.findById(decoded.id).select('_id email name');
     }
 
-    if (!user) {
+    if (!user) {  
       throw new AuthenticationError('User not found');
     }
 
-    // Check if session is still valid
-    if (user.sessionId && user.sessionId !== decoded.sessionId) {
-      throw new AuthenticationError('Session expired');
-    }
-
+    // Set user info on request object
     req.user = user;
-    req.userType = decoded.role || 'user';
+    req.userType = decoded.role;
+    req.tokenId = decoded.tokenId;
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
@@ -83,57 +105,46 @@ export const authorize = (...roles) => {
 };
 
 /**
- * Superadmin Only Middleware
+ * Role-specific middleware
  */
 export const requireSuperadmin = authorize('superadmin');
-
-/**
- * Restaurant Owner Only Middleware
- */
 export const requireRestaurantOwner = authorize('restaurantOwner');
-
-/**
- * User Only Middleware
- */
 export const requireUser = authorize('user');
 
 /**
- * Optional Authentication
+ * Optional Authentication (Pure JWT)
  * Allows requests with or without authentication
  */
 export const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next();
-    }
-
-    const token = authHeader.substring(7);
+    const token = extractToken(req);
     
     if (!token) {
       return next();
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret);
+    const decoded = jwt.verify(token, config.jwt.secret, {
+      issuer: 'fatoorty-api',
+      audience: 'fatoorty-client'
+    });
     
-    if (!decoded) {
+    if (!decoded || !decoded.role || !['superadmin', 'restaurantOwner'].includes(decoded.role)) {
       return next();
     }
 
+    // Lightweight user verification
     let user = null;
     
     if (decoded.role === 'superadmin') {
-      user = await Superadmin.findById(decoded.id);
+      user = await Superadmin.findById(decoded.id).select('_id email name');
     } else if (decoded.role === 'restaurantOwner') {
-      user = await RestaurantOwner.findById(decoded.id);
-    } else {
-      user = await User.findById(decoded.id);
+      user = await RestaurantOwner.findById(decoded.id).select('_id email name');
     }
 
-    if (user && (!user.sessionId || user.sessionId === decoded.sessionId)) {
+    if (user) {
       req.user = user;
-      req.userType = decoded.role || 'user';
+      req.userType = decoded.role;
+      req.tokenId = decoded.tokenId;
     }
 
     next();

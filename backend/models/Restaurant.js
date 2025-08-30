@@ -17,7 +17,7 @@ const restaurantSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['fastfood', 'fine-dining', 'cafe', 'buffet', 'home-kitchen'],
+      // enum: ['fastfood', 'fine-dining', 'cafe', 'buffet', 'home-kitchen'],
       required: true,
     },
     rating: {

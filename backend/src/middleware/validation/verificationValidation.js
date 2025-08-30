@@ -1,4 +1,5 @@
 import { createError } from '../error/errorHandler.js';
+import mongoose from 'mongoose';
 
 /**
  * Validate verification status update request
@@ -52,7 +53,6 @@ export const validateVerificationStatus = (req, res, next) => {
     }
 
     // Validate each restaurant ID format
-    const mongoose = require('mongoose');
     for (const id of restaurantIds) {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
@@ -152,7 +152,6 @@ export const validateVerificationQuery = (req, res, next) => {
  */
 export const validateRestaurantId = (req, res, next) => {
   const { restaurantId } = req.params;
-  const mongoose = require('mongoose');
 
   if (!restaurantId) {
     return res.status(400).json({
